@@ -5,8 +5,8 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    username: Lev   #你本地的数据库用户名
-    password: Ywx8321926$1 #你本地的数据库密码
+    username: Lev   #数据库用户名
+    password: Ywx8321926$1 #数据库密码
     url: jdbc:mysql://39.106.21.164:3306/tsim?useUnicode=true&characterEncoding=utf-8&allowMultiQueries=true&useSSL=false&serverTimezone=GMT%2b8&allowPublicKeyRetrieval=true
   servlet:
     multipart:
