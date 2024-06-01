@@ -23,6 +23,8 @@ const routes = [
       { path: 'adminPerson', name: 'AdminPerson', meta: { name: '个人信息' }, component: () => import('../views/manager/AdminPerson') },
       { path: 'password', name: 'Password', meta: { name: '修改密码' }, component: () => import('../views/manager/Password') },
       { path: 'notice', name: 'Notice', meta: { name: '公告信息' }, component: () => import('../views/manager/Notice') },
+      { path: 'station', name: 'Station', meta: { name: '站点管理' }, component: () => import('../views/manager/Station') },
+      { path: 'route', name: 'Route', meta: { name: '路径管理' }, component: () => import('../views/manager/Route') },
     ]
   },
   {

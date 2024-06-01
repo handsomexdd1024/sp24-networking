@@ -9,12 +9,12 @@
     </sql>
 
     <select id="selectAll" resultType="com.example.entity.Route">
-        select
-        <include refid="Base_Column_List" />
-        from routes
+        SELECT routes.*, from_station.name as fromStationName, to_station.name as toStationName
+        FROM routes
+        LEFT JOIN stations AS from_station ON routes.from_station_id = from_station.id
+        LEFT JOIN stations AS to_station ON routes.to_station_id = to_station.id
         <where>
-            <if test="id != null"> and id= #{id}</if>
-            <if test="name != null"> and name like concat('%', #{name}, '%')</if>
+            <if test="id != null"> and routes.id = #{id}</if>
         </where>
     </select>
 

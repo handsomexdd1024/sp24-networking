@@ -11,6 +11,11 @@ public class Route {
     private String routeType;
     private String disableFlag;
 
+
+    private String fromStationName;
+    private String toStationName;
+
+
     public Integer getId() {
         return id;
     }
@@ -49,5 +54,21 @@ public class Route {
 
     public void setDisableFlag(String disableFlag) {
         this.disableFlag = disableFlag;
+    }
+
+    public String getFromStationName() {
+        return fromStationName;
+    }
+
+    public void setFromStationName(String fromStationName) {
+        this.fromStationName = fromStationName;
+    }
+
+    public String getToStationName() {
+        return toStationName;
+    }
+
+    public void setToStationName(String toStationName) {
+        this.toStationName = toStationName;
     }
 }
