@@ -5,13 +5,12 @@
     <div class="front-header">
       <div class="front-header-left">
         <img src="@/assets/imgs/logo.png" alt="">
-        <div class="title">项目前台</div>
+        <div class="title">物资调配规划模拟系统</div>
       </div>
       <div class="front-header-center">
         <div class="front-header-nav">
           <el-menu :default-active="$route.path" mode="horizontal" router>
 						<el-menu-item index="/front/home">首页</el-menu-item>
-						<el-menu-item index="/front/person">个人中心</el-menu-item>
           </el-menu>
         </div>
       </div>
@@ -29,6 +28,9 @@
               </div>
             </div>
             <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                <div style="text-decoration: none" @click="goToPerson">个人中心</div>
+              </el-dropdown-item>
               <el-dropdown-item>
                 <div style="text-decoration: none" @click="logout">退出</div>
               </el-dropdown-item>
@@ -86,6 +88,9 @@ export default {
       localStorage.removeItem("xm-user");
       this.$router.push("/login");
     },
+    goToPerson() {
+      this.$router.push("/front/person");
+    }
   }
 
 }

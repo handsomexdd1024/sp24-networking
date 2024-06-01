@@ -52,6 +52,18 @@
 
   > 编辑配置-> + -> npm -> package.jason(P)：选择jason -> 脚本(T)选择：serve
 
+
+
+4. Echarts安装
+
+   在根目录下安装Echarts
+
+```
+npm install echarts --save
+```
+
+
+
 - 启动
 
 
