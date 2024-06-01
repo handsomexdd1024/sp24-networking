@@ -25,7 +25,11 @@ public class StationService {
     @Resource
     private StationMapper stationMapper;
 
-    public void add(Station station) {stationMapper.insert(station);}
+    public void add(Station station) {
+        if (station != null) {
+            stationMapper.insert(station);
+        }
+    }
 
     /**
      * 删除

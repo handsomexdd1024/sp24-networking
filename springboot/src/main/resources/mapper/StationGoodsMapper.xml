@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.StationGoodsMapper">
+
+    <sql id="Base_Column_List">
+        id, station_id, goods_id, quantity
+    </sql>
+
+    <select id="selectAll" resultType="com.example.entity.StationGoods">
+        select
+        <include refid="Base_Column_List" />
+        from station_goods
+    </select>
+
+    <select id="selectById" resultType="com.example.entity.StationGoods">
+        select
+        <include refid="Base_Column_List" />
+        from station_goods
+        where id = #{id}
+    </select>
+
+    <delete id="deleteById">
+        delete from station_goods
+        where id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.example.entity.StationGoods" useGeneratedKeys="true" keyProperty="id">
+        insert into station_goods
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="stationId != null">station_id,</if>
+            <if test="goodsId != null">goods_id,</if>
+            <if test="quantity != null">quantity,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="stationId != null">#{stationId},</if>
+            <if test="goodsId != null">#{goodsId},</if>
+            <if test="quantity != null">#{quantity},</if>
+        </trim>
+    </insert>
+
+    <update id="updateById" parameterType="com.example.entity.StationGoods">
+        update station_goods
+        <set>
+            <if test="stationId != null">
+                station_id = #{stationId},
+            </if>
+            <if test="goodsId != null">
+                goods_id = #{goodsId},
+            </if>
+            <if test="quantity != null">
+                quantity = #{quantity},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>
