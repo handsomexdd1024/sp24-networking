@@ -93,6 +93,22 @@ export default {
               { name: '乌鲁木齐', value: [87.617733, 43.792818] }
             ];
 
+            // 定义航空站点的相连关系
+            var flightLinks = [
+              ['北京', '天津'],
+              ['北京', '石家庄'],
+              ['上海', '南京'],
+              ['广州', '长沙'],
+              ['武汉', '长沙'],
+              ['成都', '重庆'],
+              ['南昌', '福州'],
+              ['福州', '广州'],
+              ['海口', '广州'],
+              ['兰州', '西宁'],
+              ['西宁', '乌鲁木齐']
+              // 可以继续添加其他相连站点
+            ];
+
             // 定义公路站点的相连关系
             var roadLinks = [
               ['北京', '天津'],
@@ -109,7 +125,6 @@ export default {
               ['南京', '杭州'],
               ['南昌', '福州'],
               ['福州', '广州'],
-              ['海口', '广州'],
               ['兰州', '西宁'],
               ['西宁', '乌鲁木齐']
               // 可以继续添加其他相连站点
@@ -136,22 +151,18 @@ export default {
             // 货车图标路径
             var truckPath = 'path://M1317.6,616.5H410.2c-27.8,0-50.4-22.6-50.4-50.4v-406c0-27.8,22.6-50.4,50.4-50.4h907.3c27.8,0,50.4,22.6,50.4,50.4v406C1368,593.9,1345.4,616.5,1317.6,616.5z M1091.6,616.5h-574c-27.8,0-50.4,22.6-50.4,50.4v70.2c0,27.8,22.6,50.4,50.4,50.4h574c27.8,0,50.4-22.6,50.4-50.4v-70.2C1142,639.1,1119.4,616.5,1091.6,616.5z M492.5,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S437,566.1,492.5,566.1zM1091.6,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S1036.1,566.1,1091.6,566.1z';
 
-            // 飞线站点遍历
-            var convertData = function(data) {
+            // 生成航空线路数据
+            var createFlightData = function(links) {
               var res = [];
-              for (var i = 0; i < data.length; i++) {
-                for (var j = 0; j < data.length; j++) {
-                  if (i !== j) {
-                    var fromCoord = geoCoordMap[data[i].name];
-                    var toCoord = geoCoordMap[data[j].name];
-                    if (fromCoord && toCoord) {
-                      res.push({
-                        fromName: data[i].name,
-                        toName: data[j].name,
-                        coords: [fromCoord, toCoord]
-                      });
-                    }
-                  }
+              for (var i = 0; i < links.length; i++) {
+                var fromCoord = geoCoordMap[links[i][0]];
+                var toCoord = geoCoordMap[links[i][1]];
+                if (fromCoord && toCoord) {
+                  res.push({
+                    fromName: links[i][0],
+                    toName: links[i][1],
+                    coords: [fromCoord, toCoord]
+                  });
                 }
               }
               return res;
@@ -246,26 +257,26 @@ export default {
                   name: '飞行路线',
                   type: 'lines',
                   coordinateSystem: 'geo',
-                  zlevel: 2,
+                  zlevel: 3,
                   large: true,
                   lineStyle: {
                     normal: {
                       color: '#4fa977',
-                      width: 1,
+                      width: 2,
                       opacity: 0.6,
                       curveness: 0.2
                     }
                   },
-                  data: convertData(data)
+                  data: createFlightData(flightLinks)
                 },
                 {
                   name: '飞行路线动态',
                   type: 'lines',
                   coordinateSystem: 'geo',
-                  zlevel: 2,
+                  zlevel: 3,
                   effect: {
                     show: true,
-                    period: 6,
+                    period: 2,
                     trailLength: 0.7,
                     color: '#a6c84c',
                     symbolSize: 3
@@ -277,17 +288,17 @@ export default {
                       curveness: 0.2
                     }
                   },
-                  data: convertData(data)
+                  data: createFlightData(flightLinks)
                 },
                 {
                   name: '公路',
                   type: 'lines',
                   coordinateSystem: 'geo',
-                  zlevel: 1,
+                  zlevel: 2,
                   large: true,
                   effect: {
                     show: true,
-                    period: 8,
+                    period: 6,
                     color:'#ffffff',
                     symbol: truckPath,
                     symbolSize: 10,
