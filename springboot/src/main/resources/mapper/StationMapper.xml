@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.StationMapper">
+
+    <sql id="Base_Column_List">
+        id, name, latitude, longitude, storage, disable_flag
+    </sql>
+
+    <select id="selectAll" resultType="com.example.entity.Station">
+        select
+        <include refid="Base_Column_List" />
+        from stations
+        <where>
+            <if test="id != null"> and id= #{id}</if>
+            <if test="name != null"> and name like concat('%', #{name}, '%')</if>
+        </where>
+    </select>
+
+    <select id="selectById" resultType="com.example.entity.Station">
+        select
+        <include refid="Base_Column_List" />
+        from stations
+        where id = #{id}
+    </select>
+
+    <delete id="deleteById">
+        delete from stations
+        where  id = #{id}
+    </delete>
+
+    <insert id="insert" parameterType="com.example.entity.Station" useGeneratedKeys="true">
+        insert into stations
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="id != null">id,</if>
+                <if test="name != null">name,</if>
+                <if test="latitude != null">latitude,</if>
+                <if test="longitude != null">longitude,</if>
+                <if test="storage != null">storage,</if>
+                <if test="disableFlag != null">disable_flag,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+                <if test="id != null">#{id},</if>
+                <if test="name != null">#{name},</if>
+                <if test="latitude != null">#{latitude},</if>
+                <if test="longitude != null">#{longitude},</if>
+                <if test="storage != null">#{storage},</if>
+                <if test="disableFlag != null">#{disableFlag},</if>
+        </trim>
+    </insert>
+
+    <update id="updateById" parameterType="com.example.entity.Station">
+        update stations
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="latitude != null">
+                latitude = #{latitude},
+            </if>
+            <if test="longitude != null">
+                longitude = #{longitude},
+            </if>
+            <if test="storage != null">
+                storage = #{storage},
+            </if>
+            <if test="disableFlag != null">
+                disable_flag = #{disableFlag},
+            </if>
+        </set>
+        where id = #{id} 
+    </update>
+
+</mapper>
