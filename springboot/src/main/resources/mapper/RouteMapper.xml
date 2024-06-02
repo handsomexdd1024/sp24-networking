@@ -18,12 +18,35 @@
         </where>
     </select>
 
+    <select id="selectAllWithKeyWord" resultType="com.example.entity.Route">
+        SELECT routes.*, from_station.name as fromStationName, to_station.name as toStationName
+        FROM routes
+        LEFT JOIN stations AS from_station ON routes.from_station_id = from_station.id
+        LEFT JOIN stations AS to_station ON routes.to_station_id = to_station.id
+        <where>
+            <if test="route.id != null"> AND routes.id = #{route.id}</if>
+            <if test="keyword != null and keyword != ''">
+                AND (from_station.name LIKE CONCAT('%', #{keyword}, '%')
+                OR to_station.name LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+    </select>
+
+
     <select id="selectById" resultType="com.example.entity.Route">
         select
         <include refid="Base_Column_List" />
         from routes
         where id = #{id}
     </select>
+
+    <select id="selectByFromToType" resultType="com.example.entity.Route">
+        SELECT * FROM routes
+        WHERE from_station_id = #{fromStationId}
+          AND to_station_id = #{toStationId}
+          AND route_type = #{routeType}
+    </select>
+
 
     <delete id="deleteById">
         delete from routes

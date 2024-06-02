@@ -6,6 +6,8 @@ import com.example.mapper.RouteMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Service;
+import com.example.exception.CustomException;
+import com.example.common.enums.ResultCodeEnum;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -19,6 +21,9 @@ public class RouteService {
 
     public void add(Route route) {
         if (route != null) {
+            if (routeExists(route)) {
+                throw new CustomException(ResultCodeEnum.ROUTE_ALREADY_EXISTS);
+            }
             routeMapper.insert(route);
         }
     }
@@ -61,11 +66,27 @@ public class RouteService {
     }
 
     /**
+     * 查询是否有重复
+     */
+    private boolean routeExists(Route route) {
+        return routeMapper.selectByFromToType(route.getFromStationId(), route.getToStationId(), route.getRouteType()) != null;
+    }
+
+    /**
      * 分页查询
      */
     public PageInfo<Route> selectPage(Route route, Integer pageNum, Integer pageSize) {
         PageHelper.startPage(pageNum, pageSize);
         List<Route> list = routeMapper.selectAll(route);
+        return PageInfo.of(list);
+    }
+
+    /**
+     * 分页查询带关键字
+     */
+    public PageInfo<Route> selectPageWithKeyWord(Route route, String keyword, Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<Route> list = routeMapper.selectAllWithKeyWord(route, keyword);
         return PageInfo.of(list);
     }
 

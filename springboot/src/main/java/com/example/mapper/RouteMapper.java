@@ -1,6 +1,7 @@
 package com.example.mapper;
 
 import com.example.entity.Route;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -33,5 +34,12 @@ public interface RouteMapper {
       * 查询所有
     */
     List<Route> selectAll(Route route);
-
+    /**
+     * 查询所有带关键字
+     */
+    List<Route> selectAllWithKeyWord(@Param("route") Route route, @Param("keyword") String keyword);
+    /**
+     * 查询是否有重复
+     */
+    Route selectByFromToType(@Param("fromStationId") Integer fromStationId, @Param("toStationId") Integer toStationId, @Param("routeType") String routeType);
 }

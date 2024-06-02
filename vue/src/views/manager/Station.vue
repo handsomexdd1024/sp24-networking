@@ -212,7 +212,7 @@ export default {
       }
     },
     formatDisableFlag(row, column, cellValue) {
-      return cellValue === 0 ? '可用' : '不可用';
+      return cellValue === '0' ? '可用' : '不可用';
     }
   }
 };

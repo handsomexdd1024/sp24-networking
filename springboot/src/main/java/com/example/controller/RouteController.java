@@ -91,5 +91,16 @@ public class RouteController {
         PageInfo<Route> page = routeService.selectPage(route, pageNum, pageSize);
         return Result.success(page);
     }
+    /**
+     * 分页查询带关键字
+     */
+    @GetMapping("/selectPageWithKeyWord")
+    public Result selectPageWithKeyWord(Route route,
+                                        @RequestParam(defaultValue = "1") Integer pageNum,
+                                        @RequestParam(defaultValue = "10") Integer pageSize,
+                                        @RequestParam(required = false) String keyword) {
+        PageInfo<Route> page = routeService.selectPageWithKeyWord(route, keyword, pageNum, pageSize);
+        return Result.success(page);
+    }
 
 }
