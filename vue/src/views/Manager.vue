@@ -59,6 +59,7 @@
             </template>
             <el-menu-item index="/station">站点管理</el-menu-item>
             <el-menu-item index="/route">路径管理</el-menu-item>
+            <el-menu-item index="/goods">资产管理</el-menu-item>
           </el-submenu>
         </el-menu>
       </div>

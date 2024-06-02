@@ -117,7 +117,7 @@ export default {
               },
               series: [
                 {
-                  name: '省会',
+                  name: '站点',
                   type: 'scatter',
                   coordinateSystem: 'geo',
                   data: data,

@@ -20,7 +20,7 @@
         <el-table-column prop="latitude" label="经度"></el-table-column>
         <el-table-column prop="longitude" label="纬度"></el-table-column>
         <el-table-column prop="storage" label="仓储量"></el-table-column>
-        <el-table-column prop="disableFlag" label="仓库可用性"></el-table-column>
+        <el-table-column prop="disableFlag" label="仓库可用性" :formatter="formatDisableFlag"></el-table-column>
         <el-table-column label="操作" align="center" width="180">
           <template v-slot="scope">
             <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
@@ -46,7 +46,7 @@
       <el-form :model="form" label-width="100px" style="padding-right: 50px" :rules="rules" ref="formRef">
         <el-form-item v-if="!isManualInput" label="站点" prop="name">
           <el-select v-model="selectedCity" placeholder="选择站点" @change="handleCityChange">
-            <el-option v-for="city in cities" :key="city.name" :label="city.name" :value="city" :disabled="city.disabled"></el-option>
+            <el-option v-for="city in cities" :key="city.name" :label="city.name" :value="city.name" :disabled="city.disabled"></el-option>
           </el-select>
           <el-button @click="isManualInput = true" type="text">加入临时站点</el-button>
         </el-form-item>
@@ -64,8 +64,8 @@
         </el-form-item>
         <el-form-item label="仓库可用性" prop="disableFlag">
           <el-select v-model="form.disableFlag" placeholder="请选择">
-            <el-option label="是" :value="true"></el-option>
-            <el-option label="否" :value="false"></el-option>
+            <el-option label="是" :value="0"></el-option>
+            <el-option label="否" :value="1"></el-option>
           </el-select>
         </el-form-item>
       </el-form>
@@ -109,7 +109,7 @@ export default {
   },
   methods: {
     handleAdd() {
-      this.form = { disableFlag: true };
+      this.form = { disableFlag: 0 };
       this.isManualInput = false;
       this.isEditing = false;
       this.selectedCity = null;
@@ -182,6 +182,7 @@ export default {
       }).then(res => {
         this.tableData = res.data?.list;
         this.total = res.data?.total;
+        this.fetchCities(); // 确保在加载完站点数据后更新城市列表
       });
     },
     reset() {
@@ -194,19 +195,24 @@ export default {
     fetchCities() {
       this.$request.get('/station/selectAll').then(res => {
         const existingStations = res.data.map(station => station.name);
-        // 假设你有一个包含所有城市信息的列表 ALL_CITIES
-        this.cities = ALL_CITIES.map(city => ({
-          name: city.name,
-          latitude: city.latitude,
-          longitude: city.longitude,
-          disabled: existingStations.includes(city.name)
-        }));
+        this.$request.get('/station/allCities').then(cityRes => {
+          this.cities = cityRes.data.map(city => ({
+            ...city,
+            disabled: existingStations.includes(city.name)
+          }));
+        });
       });
     },
-    handleCityChange(city) {
-      this.form.name = city.name;
-      this.form.latitude = city.latitude;
-      this.form.longitude = city.longitude;
+    handleCityChange(cityName) {
+      const city = this.cities.find(c => c.name === cityName);
+      if (city) {
+        this.form.name = city.name;
+        this.form.latitude = city.latitude;
+        this.form.longitude = city.longitude;
+      }
+    },
+    formatDisableFlag(row, column, cellValue) {
+      return cellValue === 0 ? '可用' : '不可用';
     }
   }
 };

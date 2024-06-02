@@ -11,7 +11,7 @@ public class Station {
     private Double longitude;
     private Double latitude;
     private int storage;
-    private boolean disableFlag;
+    private String disableFlag;
 
 
     public Integer getId() {
@@ -54,11 +54,11 @@ public class Station {
         this.storage = storage;
     }
 
-    public boolean isDisableFlag() {
+    public String getDisableFlag() {
         return disableFlag;
     }
 
-    public void setDisableFlag(boolean disableFlag) {
+    public void setDisableFlag(String disableFlag) {
         this.disableFlag = disableFlag;
     }
 }

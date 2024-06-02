@@ -25,6 +25,7 @@ const routes = [
       { path: 'notice', name: 'Notice', meta: { name: '公告信息' }, component: () => import('../views/manager/Notice') },
       { path: 'station', name: 'Station', meta: { name: '站点管理' }, component: () => import('../views/manager/Station') },
       { path: 'route', name: 'Route', meta: { name: '路径管理' }, component: () => import('../views/manager/Route') },
+      { path: 'goods', name: 'Goods', meta: { name: '资产管理' }, component: () => import('../views/manager/Goods') },
     ]
   },
   {
@@ -48,7 +49,7 @@ const router = new VueRouter({
 })
 
 //禁止USER前往的后端
-const restrictedPaths = ['/home', '/admin', '/user', '/notice']; // 根据需要添加更多路径
+const restrictedPaths = ['/home', '/admin', '/user', '/notice','/station']; // 根据需要添加更多路径
 
 // 路由守卫
 router.beforeEach((to ,from, next) => {

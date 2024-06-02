@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import java.util.List;
 
+import com.example.common.City;
+import com.example.common.Constants;
+
 /**
  * 用户管理前端操作接口
  **/
@@ -90,6 +93,14 @@ public class StationController {
                              @RequestParam(defaultValue = "10") Integer pageSize) {
         PageInfo<Station> page = stationService.selectPage(station, pageNum, pageSize);
         return Result.success(page);
+    }
+
+    /**
+     * 获取所有城市信息常量
+     */
+    @GetMapping("/allCities")
+    public Result getAllCities() {
+        return Result.success(Constants.ALL_CITIES);
     }
 
 }
