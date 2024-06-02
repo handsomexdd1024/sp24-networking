@@ -13,10 +13,9 @@
 
     <div class="table">
       <div>站点管理</div>
-      <el-table :data="tableData" strip @selection-change="handleSelectionChange">
+      <el-table :data="tableData" stripe @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>
-
         <el-table-column prop="name" label="名称"></el-table-column>
         <el-table-column prop="latitude" label="经度"></el-table-column>
         <el-table-column prop="longitude" label="纬度"></el-table-column>
@@ -43,33 +42,39 @@
       </div>
     </div>
 
-
     <el-dialog title="编辑站点" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" destroy-on-close>
       <el-form :model="form" label-width="100px" style="padding-right: 50px" :rules="rules" ref="formRef">
-        <el-form-item label="站点名称" prop="name">
+        <el-form-item v-if="!isManualInput" label="站点" prop="name">
+          <el-select v-model="selectedCity" placeholder="选择站点" @change="handleCityChange">
+            <el-option v-for="city in cities" :key="city.name" :label="city.name" :value="city" :disabled="city.disabled"></el-option>
+          </el-select>
+          <el-button @click="isManualInput = true" type="text">加入临时站点</el-button>
+        </el-form-item>
+        <el-form-item v-if="isManualInput || isEditing" label="站点名称" prop="name">
           <el-input v-model="form.name" placeholder="站点名称"></el-input>
         </el-form-item>
-        <el-form-item label="经度" prop="latitude">
+        <el-form-item v-if="isManualInput || isEditing" label="经度" prop="latitude">
           <el-input v-model="form.latitude" placeholder="经度"></el-input>
         </el-form-item>
-        <el-form-item label="纬度" prop="longitude">
+        <el-form-item v-if="isManualInput || isEditing" label="纬度" prop="longitude">
           <el-input v-model="form.longitude" placeholder="纬度"></el-input>
         </el-form-item>
         <el-form-item label="仓储量" prop="storage">
-          <el-input v-model="form.storage" placeholder="仓储量"></el-input>
+          <el-input v-model="form.storage" placeholder="仓储量(单位:吨)"></el-input>
         </el-form-item>
         <el-form-item label="仓库可用性" prop="disableFlag">
-          <el-input v-model="form.disableFlag" placeholder="仓库可用性"></el-input>
+          <el-select v-model="form.disableFlag" placeholder="请选择">
+            <el-option label="是" :value="true"></el-option>
+            <el-option label="否" :value="false"></el-option>
+          </el-select>
         </el-form-item>
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button @click="fromVisible = false">取 消</el-button>
-        <el-button type="primary" @click="save">确 定</el-button>
+        <el-button @click="fromVisible = false">取消</el-button>
+        <el-button type="primary" @click="save">确定</el-button>
       </div>
     </el-dialog>
-
-
   </div>
 </template>
 
@@ -78,9 +83,9 @@ export default {
   name: "Station",
   data() {
     return {
-      tableData: [],  // 所有的数据
-      pageNum: 1,   // 当前的页码
-      pageSize: 10,  // 每页显示的个数
+      tableData: [],
+      pageNum: 1,
+      pageSize: 10,
       total: 0,
       name: null,
       fromVisible: false,
@@ -88,79 +93,86 @@ export default {
       user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
       rules: {
         name: [
-          {required: true, message: '请输入站点名称', trigger: 'blur'},
+          { required: true, message: '请输入站点名称', trigger: 'blur' },
         ]
       },
-      ids: []
-    }
+      ids: [],
+      cities: [],
+      selectedCity: null,
+      isManualInput: false,
+      isEditing: false
+    };
   },
   created() {
-    this.load(1)
+    this.load(1);
+    this.fetchCities();
   },
   methods: {
-    handleAdd() {   // 新增数据
-      this.form = {}  // 新增数据的时候清空数据
-      this.fromVisible = true   // 打开弹窗
+    handleAdd() {
+      this.form = { disableFlag: true };
+      this.isManualInput = false;
+      this.isEditing = false;
+      this.selectedCity = null;
+      this.fromVisible = true;
     },
-    handleEdit(row) {   // 编辑数据
-      this.form = JSON.parse(JSON.stringify(row))  // 给form对象赋值  注意要深拷贝数据
-      this.fromVisible = true   // 打开弹窗
+    handleEdit(row) {
+      this.form = JSON.parse(JSON.stringify(row));
+      this.isManualInput = true;
+      this.isEditing = true;
+      this.fromVisible = true;
     },
-    save() {   // 保存按钮触发的逻辑  它会触发新增或者更新
+    save() {
       this.$refs.formRef.validate((valid) => {
         if (valid) {
           this.$request({
             url: this.form.id ? '/station/update' : '/station/add',
             method: this.form.id ? 'PUT' : 'POST',
             data: this.form
-            //   data: this.form    data传给Controller
           }).then(res => {
-            if (res.code === '200') {  // 表示成功保存
-              this.$message.success('保存成功')
-              this.load(1)
-              this.fromVisible = false
+            if (res.code === '200') {
+              this.$message.success('保存成功');
+              this.load(1);
+              this.fromVisible = false;
             } else {
-              this.$message.error(res.msg)  // 弹出错误的信息
+              this.$message.error(res.msg);
             }
-          })
+          });
         }
-      })
+      });
     },
-    del(id) {   // 单个删除
-      this.$confirm('您确定删除吗？', '确认删除', {type: "warning"}).then(response => {
+    del(id) {
+      this.$confirm('您确定删除吗？', '确认删除', { type: "warning" }).then(response => {
         this.$request.delete('/station/delete/' + id).then(res => {
-          if (res.code === '200') {   // 表示操作成功
-            this.$message.success('操作成功')
-            this.load(1)
+          if (res.code === '200') {
+            this.$message.success('操作成功');
+            this.load(1);
           } else {
-            this.$message.error(res.msg)  // 弹出错误的信息
+            this.$message.error(res.msg);
           }
-        })
-      }).catch(() => {
-      })
+        });
+      }).catch(() => {});
     },
-    handleSelectionChange(rows) {   // 当前选中的所有的行数据
-      this.ids = rows.map(v => v.id)
+    handleSelectionChange(rows) {
+      this.ids = rows.map(v => v.id);
     },
-    delBatch() {   // 批量删除
+    delBatch() {
       if (!this.ids.length) {
-        this.$message.warning('请选择数据')
-        return
+        this.$message.warning('请选择数据');
+        return;
       }
-      this.$confirm('您确定批量删除这些数据吗？', '确认删除', {type: "warning"}).then(response => {
-        this.$request.delete('/station/delete/batch', {data: this.ids}).then(res => {
-          if (res.code === '200') {   // 表示操作成功
-            this.$message.success('操作成功')
-            this.load(1)
+      this.$confirm('您确定批量删除这些数据吗？', '确认删除', { type: "warning" }).then(response => {
+        this.$request.delete('/station/delete/batch', { data: this.ids }).then(res => {
+          if (res.code === '200') {
+            this.$message.success('操作成功');
+            this.load(1);
           } else {
-            this.$message.error(res.msg)  // 弹出错误的信息
+            this.$message.error(res.msg);
           }
-        })
-      }).catch(() => {
-      })
+        });
+      }).catch(() => {});
     },
-    load(pageNum) {  // 分页查询
-      if (pageNum) this.pageNum = pageNum
+    load(pageNum) {
+      if (pageNum) this.pageNum = pageNum;
       this.$request.get('/station/selectPage', {
         params: {
           pageNum: this.pageNum,
@@ -168,25 +180,37 @@ export default {
           name: this.name,
         }
       }).then(res => {
-        this.tableData = res.data?.list
-        this.total = res.data?.total
-      })
+        this.tableData = res.data?.list;
+        this.total = res.data?.total;
+      });
     },
     reset() {
-      this.name = null
-      this.load(1)
+      this.name = null;
+      this.load(1);
     },
     handleCurrentChange(pageNum) {
-      this.load(pageNum)
+      this.load(pageNum);
     },
-    handleAvatarSuccess(response, file, fileList) {
-      // 把头像属性换成上传的图片的链接
-      this.form.avatar = response.data
+    fetchCities() {
+      this.$request.get('/station/selectAll').then(res => {
+        const existingStations = res.data.map(station => station.name);
+        // 假设你有一个包含所有城市信息的列表 ALL_CITIES
+        this.cities = ALL_CITIES.map(city => ({
+          name: city.name,
+          latitude: city.latitude,
+          longitude: city.longitude,
+          disabled: existingStations.includes(city.name)
+        }));
+      });
     },
+    handleCityChange(city) {
+      this.form.name = city.name;
+      this.form.latitude = city.latitude;
+      this.form.longitude = city.longitude;
+    }
   }
-}
+};
 </script>
 
 <style scoped>
-
 </style>
