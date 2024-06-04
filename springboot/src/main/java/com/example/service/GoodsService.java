@@ -58,7 +58,7 @@ public class GoodsService {
      */
     public void deleteBatch(List<Integer> ids) {
         for (Integer id : ids) {
-            goodsMapper.deleteById(id);
+            deleteById(id); // 重用单个删除方法
         }
     }
 

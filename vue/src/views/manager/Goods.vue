@@ -2,15 +2,16 @@
   <div>
     <div class="search">
       <el-input placeholder="请输入货物名称查询" style="width: 200px" v-model="name"></el-input>
-      <el-select v-model="selectedStation" placeholder="选择站点" @change="load(1)" style="width: 200px; margin-left: 10px;">
-        <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.id"></el-option>
-      </el-select>
+
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
     </div>
 
     <div class="operation">
-      <el-button type="primary" plain @click="handleAdd">新增</el-button>
+      <el-select v-model="selectedStation" placeholder="选择站点" @change="load(1)" style="width: 200px; margin-left: 10px;">
+        <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.id"></el-option>
+      </el-select>
+      <el-button type="primary" plain style="margin-left: 10px" @click="handleAdd">新增</el-button>
       <el-button type="danger" plain @click="delBatch">批量删除</el-button>
     </div>
 
@@ -22,6 +23,7 @@
         <el-table-column prop="name" label="货物名字"></el-table-column>
         <el-table-column prop="category" label="货物类别"></el-table-column>
         <el-table-column prop="quantity" label="货物量"></el-table-column>
+        <el-table-column prop="stationName" label="所属站点"></el-table-column>
         <el-table-column label="操作" align="center" width="180">
           <template v-slot="scope">
             <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>

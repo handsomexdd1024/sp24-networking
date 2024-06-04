@@ -66,6 +66,10 @@ public class StationGoodsController {
         return Result.success(list);
     }
 
-
+    @GetMapping("/selectByGoodsId/{goodsId}")
+    public Result selectByGoodsId(@PathVariable Integer goodsId) {
+        StationGoods stationGoods = stationGoodsService.selectByGoodsId(goodsId);
+        return Result.success(stationGoods);
+    }
 
 }
