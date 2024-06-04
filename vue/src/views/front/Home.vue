@@ -55,8 +55,6 @@ export default {
             echarts.registerMap('china', chinaJson);
             myChart.hideLoading();
 
-            const chinaBoundary = this.getChinaBoundary(chinaJson);
-
             const geoCoordMap = {};
             const data = this.stations.map(station => {
               geoCoordMap[station.name] = [station.longitude, station.latitude];
@@ -68,32 +66,40 @@ export default {
               };
             });
 
-            const createLinkData = (links, color) => {
+            const createLinkData = (links) => {
               const res = [];
               links.forEach(link => {
-                let fromCoord = geoCoordMap[link.fromStationName];
-                let toCoord = geoCoordMap[link.toStationName];
+                const fromCoord = geoCoordMap[link.fromStationName];
+                const toCoord = geoCoordMap[link.toStationName];
                 if (fromCoord && toCoord) {
-                  let adjustedCoords = this.adjustCoordsToBoundary(fromCoord, toCoord, chinaBoundary);
                   res.push({
                     fromName: link.fromStationName,
                     toName: link.toStationName,
-                    coords: adjustedCoords,
-                    lineStyle: {
-                      color: link.disableFlag === '1' ? 'red' : color
-                    }
+                    coords: [fromCoord, toCoord],
+                    disableFlag: link.disableFlag,
+                    routeType: link.routeType
                   });
                 }
               });
               return res;
             };
 
-            const flightLinks = createLinkData(this.routes.filter(route => route.routeType === 'flight'), '#4fa977');
-            const roadLinks = createLinkData(this.routes.filter(route => route.routeType === 'road'), '#ffde00');
-            const railLinks = createLinkData(this.routes.filter(route => route.routeType === 'rail'), '#000000');
+            const flightLinks = createLinkData(this.routes.filter(route => route.routeType === 'flight'));
+            const roadLinks = createLinkData(this.routes.filter(route => route.routeType === 'road'));
+            const railLinks = createLinkData(this.routes.filter(route => route.routeType === 'rail'));
 
             const trainPath = 'path://M1705.1,317.7c-90.6,0-164.1-73.5-164.1-164.1S1614.5-10.5,1705.1-10.5S1869.2,63,1869.2,153.6S1795.7,317.7,1705.1,317.7z M1705.1,96.4c-31.6,0-57.3,25.7-57.3,57.3s25.7,57.3,57.3,57.3s57.3-25.7,57.3-57.3S1736.7,96.4,1705.1,96.4z';
             const truckPath = 'path://M1317.6,616.5H410.2c-27.8,0-50.4-22.6-50.4-50.4v-406c0-27.8,22.6-50.4,50.4-50.4h907.3c27.8,0,50.4,22.6,50.4,50.4v406C1368,593.9,1345.4,616.5,1317.6,616.5z M1091.6,616.5h-574c-27.8,0-50.4,22.6-50.4,50.4v70.2c0,27.8,22.6,50.4,50.4,50.4h574c27.8,0,50.4-22.6,50.4-50.4v-70.2C1142,639.1,1119.4,616.5,1091.6,616.5z M492.5,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S437,566.1,492.5,566.1zM1091.6,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S1036.1,566.1,1091.6,566.1z';
+
+            const offsetCoords = (coords, offset) => {
+              const theta = Math.atan2(coords[1][1] - coords[0][1], coords[1][0] - coords[0][0]);
+              const dx = offset * Math.sin(theta);
+              const dy = offset * Math.cos(theta);
+              return [
+                [coords[0][0] - dx, coords[0][1] + dy],
+                [coords[1][0] - dx, coords[1][1] + dy],
+              ];
+            };
 
             const option = {
               title: {
@@ -104,9 +110,12 @@ export default {
                 trigger: 'item',
                 formatter: function (params) {
                   if (params.seriesType === 'scatter') {
-                    return `${params.name}<br/>经度: ${params.value[0]}<br/>纬度: ${params.value[1]}<br/>仓储量: ${params.data.storage}<br/>可用性: ${params.data.disableFlag === '0' ? '可用' : '不可用'}`;
+                    const station = params.data;
+                    return `${station.name}<br/>经度: ${station.value[0]}<br/>纬度: ${station.value[1]}<br/>仓储量: ${station.storage}<br/>可用性: ${station.disableFlag === '0' ? '可用' : '不可用'}`;
                   } else if (params.seriesType === 'lines') {
-                    return `${params.data.fromName} > ${params.data.toName}`;
+                    const link = params.data;
+                    const routeType = link.routeType === 'flight' ? '航空' : (link.routeType === 'road' ? '公路' : '铁路');
+                    return `路径: ${link.fromName} > ${link.toName}<br/>类型: ${routeType}<br/>可用性: ${link.disableFlag === '0' ? '可用' : '不可用'}`;
                   }
                 }
               },
@@ -135,14 +144,9 @@ export default {
                   name: '站点',
                   type: 'scatter',
                   coordinateSystem: 'geo',
+                  data: data,
+                  symbolSize: 16,
                   zlevel: 4,
-                  data: data.map(station => ({
-                    ...station,
-                    itemStyle: {
-                      color: station.disableFlag === '1' ? 'red' : 'blue'
-                    }
-                  })),
-                  symbolSize: 12,
                   label: {
                     formatter: '{b}',
                     position: 'right',
@@ -151,6 +155,13 @@ export default {
                   emphasis: {
                     label: {
                       show: true
+                    }
+                  },
+                  itemStyle: {
+                    normal: {
+                      color: function (params) {
+                        return params.data.disableFlag === '1' ? 'red' : '#738ace';
+                      }
                     }
                   }
                 },
@@ -162,8 +173,10 @@ export default {
                   large: true,
                   lineStyle: {
                     normal: {
-                      color: '#4fa977',
-                      width: 2,
+                      color: function (params) {
+                        return params.data.disableFlag === '1' ? 'red' : '#4fa977';
+                      },
+                      width: 4,
                       opacity: 0.6,
                       curveness: 0.4
                     }
@@ -179,8 +192,8 @@ export default {
                     show: true,
                     period: 2,
                     trailLength: 0.7,
-                    color: '#a6c84c',
-                    symbolSize: 3
+                    color: '#dffa92',
+                    symbolSize: 5
                   },
                   lineStyle: {
                     normal: {
@@ -189,7 +202,7 @@ export default {
                       curveness: 0.4
                     }
                   },
-                  data: flightLinks
+                  data: flightLinks.filter(link => link.disableFlag === '0')
                 },
                 {
                   name: '公路',
@@ -207,13 +220,15 @@ export default {
                   },
                   lineStyle: {
                     normal: {
-                      color: '#ffde00',
+                      color: function (params) {
+                        return params.data.disableFlag === '1' ? 'red' : '#ffde00';
+                      },
                       width: 5,
                       opacity: 0.8,
-                      curveness: 0.1
+                      curveness: 0.1,
                     }
                   },
-                  data: roadLinks
+                  data: roadLinks.map(link => ({ ...link, coords: offsetCoords(link.coords, 0.1) }))
                 },
                 {
                   name: '铁路',
@@ -231,13 +246,15 @@ export default {
                   },
                   lineStyle: {
                     normal: {
-                      color: '#000000',
+                      color: function (params) {
+                        return params.data.disableFlag === '1' ? 'red' : '#000000';
+                      },
                       width: 5
                     }
                   },
                   progressiveThreshold: 500,
                   progressive: 200,
-                  data: railLinks
+                  data: railLinks.map(link => ({ ...link, coords: offsetCoords(link.coords, -0.1) }))
                 },
                 {
                   name: '铁路背景',
@@ -252,27 +269,13 @@ export default {
                   },
                   progressiveThreshold: 500,
                   progressive: 200,
-                  data: railLinks
+                  data: railLinks.map(link => ({ ...link, coords: offsetCoords(link.coords, -0.1) }))
                 }
               ]
             };
 
             myChart.setOption(option);
           });
-    },
-    getChinaBoundary(chinaJson) {
-      const boundary = [];
-      chinaJson.features.forEach(feature => {
-        feature.geometry.coordinates.forEach(coord => {
-          boundary.push(...coord);
-        });
-      });
-      return boundary;
-    },
-    adjustCoordsToBoundary(fromCoord, toCoord, boundary) {
-      const adjustedCoords = [fromCoord, toCoord];
-      // 在这里添加调整逻辑，将超出边界的点移动到边界内部
-      return adjustedCoords;
     }
   }
 };
