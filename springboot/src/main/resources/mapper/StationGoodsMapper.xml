@@ -21,6 +21,14 @@
         where id = #{id}
     </select>
 
+    <select id="selectByStationId" resultType="com.example.entity.StationGoods">
+        select
+        <include refid="Base_Column_List" />
+        from station_goods
+        where station_id = #{stationId}
+    </select>
+
+
     <delete id="deleteById">
         delete from station_goods
         where id = #{id}

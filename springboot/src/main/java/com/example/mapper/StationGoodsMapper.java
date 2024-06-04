@@ -17,4 +17,6 @@ public interface StationGoodsMapper {
     StationGoods selectById(Integer id);
 
     List<StationGoods> selectAll();
+
+    List<StationGoods> selectByStationId(@Param("stationId") Integer stationId);
 }

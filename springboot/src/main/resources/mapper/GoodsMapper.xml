@@ -25,6 +25,10 @@
         where id = #{id}
     </select>
 
+    <select id="getCategories" resultType="java.lang.String">
+        select distinct category from goods
+    </select>
+
     <delete id="deleteById">
         delete from goods
         where  id = #{id}

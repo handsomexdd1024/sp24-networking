@@ -60,4 +60,10 @@ public class StationGoodsController {
         return Result.success(page);
     }
 
+    @GetMapping("/selectByStationId/{stationId}")
+    public Result selectByStationId(@PathVariable Integer stationId) {
+        List<StationGoods> list = stationGoodsService.selectByStationId(stationId);
+        return Result.success(list);
+    }
+
 }

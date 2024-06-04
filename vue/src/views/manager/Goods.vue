@@ -2,6 +2,9 @@
   <div>
     <div class="search">
       <el-input placeholder="请输入货物名称查询" style="width: 200px" v-model="name"></el-input>
+      <el-select v-model="selectedStation" placeholder="选择站点" @change="load(1)" style="width: 200px; margin-left: 10px;">
+        <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.id"></el-option>
+      </el-select>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
     </div>
@@ -13,13 +16,12 @@
 
     <div class="table">
       <div>站点货物管理</div>
-      <el-table :data="tableData" strip @selection-change="handleSelectionChange">
+      <el-table :data="tableData" stripe @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>
         <el-table-column prop="name" label="货物名字"></el-table-column>
         <el-table-column prop="category" label="货物类别"></el-table-column>
         <el-table-column prop="quantity" label="货物量"></el-table-column>
-        <el-table-column prop="stationName" label="所属站点"></el-table-column>
         <el-table-column label="操作" align="center" width="180">
           <template v-slot="scope">
             <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
@@ -41,21 +43,35 @@
       </div>
     </div>
 
-
     <el-dialog title="编辑货物" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" destroy-on-close>
       <el-form :model="form" label-width="100px" style="padding-right: 50px" :rules="rules" ref="formRef">
         <el-form-item label="货物名称" prop="name">
-          <el-input v-model="form.name" placeholder="站点名称"></el-input>
+          <el-input v-model="form.name" placeholder="货物名称"></el-input>
+        </el-form-item>
+        <el-form-item label="货物类别" prop="category">
+          <el-select v-model="form.category" placeholder="选择货物类别" :disabled="!!newCategory">
+            <el-option v-for="category in categories" :key="category" :label="category" :value="category"></el-option>
+          </el-select>
+          <el-input v-model="newCategory" placeholder="新增货物类别" style="margin-top: 10px;" @input="disableSelect"></el-input>
+        </el-form-item>
+        <el-form-item label="站点" prop="stationId">
+          <el-select v-model="form.stationId" placeholder="选择站点" @change="updateStorage">
+            <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="剩余空间" prop="storage">
+          <el-input v-model="selectedStationStorage" disabled></el-input>
+        </el-form-item>
+        <el-form-item label="货物量" prop="quantity">
+          <el-input type="number" v-model.number="form.quantity" placeholder="货物量"></el-input>
         </el-form-item>
       </el-form>
 
       <div slot="footer" class="dialog-footer">
-        <el-button @click="fromVisible = false">取 消</el-button>
-        <el-button type="primary" @click="save">确 定</el-button>
+        <el-button @click="fromVisible = false">取消</el-button>
+        <el-button type="primary" @click="save">确定</el-button>
       </div>
     </el-dialog>
-
-
   </div>
 </template>
 
@@ -64,9 +80,9 @@ export default {
   name: "Goods",
   data() {
     return {
-      tableData: [],  // 所有的数据
-      pageNum: 1,   // 当前的页码
-      pageSize: 10,  // 每页显示的个数
+      tableData: [],
+      pageNum: 1,
+      pageSize: 10,
       total: 0,
       name: null,
       fromVisible: false,
@@ -74,105 +90,158 @@ export default {
       user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
       rules: {
         name: [
-          {required: true, message: '请输入站点名称', trigger: 'blur'},
+          {required: true, message: '请输入货物名称', trigger: 'blur'},
+        ],
+        category: [
+          {required: true, message: '请选择或输入货物类别', trigger: 'blur', validator: this.validateCategory}
+        ],
+        stationId: [
+          {required: true, message: '请选择站点', trigger: 'blur'},
+        ],
+        quantity: [
+          {required: true, message: '请输入货物量', trigger: 'blur'},
+          {type: 'number', message: '货物量必须是数字', trigger: 'blur'},
         ]
       },
-      ids: []
+      ids: [],
+      stations: [],
+      categories: [],
+      newCategory: '',
+      selectedStation: null,
+      selectedStationStorage: 0
     }
   },
   created() {
-    this.load(1)
+    this.load(1);
+    this.loadStations();
+    this.loadCategories();
   },
   methods: {
-    handleAdd() {   // 新增数据
-      this.form = {}  // 新增数据的时候清空数据
-      this.fromVisible = true   // 打开弹窗
+    handleAdd() {
+      this.form = {}
+      this.newCategory = '';
+      this.selectedStation = null;
+      this.selectedStationStorage = 0;
+      this.fromVisible = true
     },
-    handleEdit(row) {   // 编辑数据
-      this.form = JSON.parse(JSON.stringify(row))  // 给form对象赋值  注意要深拷贝数据
-      this.fromVisible = true   // 打开弹窗
+    handleEdit(row) {
+      this.form = JSON.parse(JSON.stringify(row))
+      this.newCategory = '';
+      this.selectedStation = this.form.stationId;
+      this.updateStorage();
+      this.fromVisible = true
     },
-    save() {   // 保存按钮触发的逻辑  它会触发新增或者更新
+    save() {
       this.$refs.formRef.validate((valid) => {
         if (valid) {
+          if (this.newCategory) {
+            this.form.category = this.newCategory;
+          }
+          if (this.form.quantity > this.selectedStationStorage) {
+            this.$message.warning('货物量超过了站点的剩余空间');
+            return;
+          }
           this.$request({
             url: this.form.id ? '/goods/update' : '/goods/add',
             method: this.form.id ? 'PUT' : 'POST',
             data: this.form
-            //   data: this.form    data传给Controller
           }).then(res => {
-            if (res.code === '200') {  // 表示成功保存
+            if (res.code === '200') {
               this.$message.success('保存成功')
               this.load(1)
               this.fromVisible = false
             } else {
-              this.$message.error(res.msg)  // 弹出错误的信息
+              this.$message.error(res.msg)
             }
           })
         }
       })
     },
-    del(id) {   // 单个删除
+    del(id) {
       this.$confirm('您确定删除吗？', '确认删除', {type: "warning"}).then(response => {
         this.$request.delete('/goods/delete/' + id).then(res => {
-          if (res.code === '200') {   // 表示操作成功
+          if (res.code === '200') {
             this.$message.success('操作成功')
             this.load(1)
           } else {
-            this.$message.error(res.msg)  // 弹出错误的信息
+            this.$message.error(res.msg)
           }
         })
-      }).catch(() => {
-      })
+      }).catch(() => {})
     },
-    handleSelectionChange(rows) {   // 当前选中的所有的行数据
+    handleSelectionChange(rows) {
       this.ids = rows.map(v => v.id)
     },
-    delBatch() {   // 批量删除
+    delBatch() {
       if (!this.ids.length) {
         this.$message.warning('请选择数据')
         return
       }
       this.$confirm('您确定批量删除这些数据吗？', '确认删除', {type: "warning"}).then(response => {
         this.$request.delete('/goods/delete/batch', {data: this.ids}).then(res => {
-          if (res.code === '200') {   // 表示操作成功
+          if (res.code === '200') {
             this.$message.success('操作成功')
             this.load(1)
           } else {
-            this.$message.error(res.msg)  // 弹出错误的信息
+            this.$message.error(res.msg)
           }
         })
-      }).catch(() => {
-      })
+      }).catch(() => {})
     },
-    load(pageNum) {  // 分页查询
+    load(pageNum) {
       if (pageNum) this.pageNum = pageNum
-      this.$request.get('/goods/selectPage', {
-        params: {
-          pageNum: this.pageNum,
-          pageSize: this.pageSize,
-          name: this.name,
-        }
-      }).then(res => {
+      const params = {
+        pageNum: this.pageNum,
+        pageSize: this.pageSize,
+        name: this.name,
+      };
+      if (this.selectedStation) {
+        params.stationId = this.selectedStation;
+      }
+      this.$request.get('/goods/selectPage', { params }).then(res => {
         this.tableData = res.data?.list
         this.total = res.data?.total
       })
     },
     reset() {
       this.name = null
+      this.selectedStation = null
       this.load(1)
     },
     handleCurrentChange(pageNum) {
       this.load(pageNum)
     },
-    handleAvatarSuccess(response, file, fileList) {
-      // 把头像属性换成上传的图片的链接
-      this.form.avatar = response.data
+    loadStations() {
+      this.$request.get('/station/selectAll').then(res => {
+        this.stations = res.data;
+      });
     },
+    loadCategories() {
+      this.$request.get('/goods/categories').then(res => {
+        this.categories = res.data;
+      });
+    },
+    updateStorage() {
+      const station = this.stations.find(station => station.id === this.form.stationId);
+      if (station) {
+        this.selectedStationStorage = station.storage;
+      }
+    },
+    validateCategory(rule, value, callback) {
+      if (!this.form.category && !this.newCategory) {
+        callback(new Error('请选择或输入货物类别'));
+      } else {
+        callback();
+      }
+    },
+    disableSelect() {
+      if (this.newCategory) {
+        this.form.category = '';
+      }
+    }
   }
 }
 </script>
 
 <style scoped>
-
 </style>

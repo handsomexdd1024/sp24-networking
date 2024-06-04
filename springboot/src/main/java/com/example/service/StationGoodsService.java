@@ -1,7 +1,9 @@
 package com.example.service;
 
 import com.example.entity.StationGoods;
+import com.example.entity.Station;
 import com.example.mapper.StationGoodsMapper;
+import com.example.mapper.StationMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Service;
@@ -15,14 +17,28 @@ public class StationGoodsService {
     @Resource
     private StationGoodsMapper stationGoodsMapper;
 
+    @Resource
+    private StationMapper stationMapper;
+
     public void add(StationGoods stationGoods) {
         if (stationGoods != null) {
             stationGoodsMapper.insert(stationGoods);
+            // 更新站点存储量
+            Station station = stationMapper.selectById(stationGoods.getStationId());
+            station.setStorage(station.getStorage() - stationGoods.getQuantity());
+            stationMapper.updateById(station);
         }
     }
 
+
+
     public void deleteById(Integer id) {
+        StationGoods stationGoods = stationGoodsMapper.selectById(id);
         stationGoodsMapper.deleteById(id);
+        // 更新站点存储量
+        Station station = stationMapper.selectById(stationGoods.getStationId());
+        station.setStorage(station.getStorage() + stationGoods.getQuantity());
+        stationMapper.updateById(station);
     }
 
     public void deleteBatch(List<Integer> ids) {
@@ -32,7 +48,12 @@ public class StationGoodsService {
     }
 
     public void updateById(StationGoods stationGoods) {
+        StationGoods oldStationGoods = stationGoodsMapper.selectById(stationGoods.getId());
         stationGoodsMapper.updateById(stationGoods);
+        // 更新站点存储量
+        Station station = stationMapper.selectById(stationGoods.getStationId());
+        station.setStorage(station.getStorage() + oldStationGoods.getQuantity() - stationGoods.getQuantity());
+        stationMapper.updateById(station);
     }
 
     public StationGoods selectById(Integer id) {
@@ -47,5 +68,9 @@ public class StationGoodsService {
         PageHelper.startPage(pageNum, pageSize);
         List<StationGoods> list = stationGoodsMapper.selectAll();
         return PageInfo.of(list);
+    }
+
+    public List<StationGoods> selectByStationId(Integer stationId) {
+        return stationGoodsMapper.selectByStationId(stationId);
     }
 }

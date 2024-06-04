@@ -69,4 +69,8 @@ public class GoodsService {
         return PageInfo.of(list);
     }
 
+    public List<String> getCategories() {
+        return goodsMapper.getCategories();
+    }
+
 }

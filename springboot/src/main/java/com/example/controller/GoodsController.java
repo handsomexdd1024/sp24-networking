@@ -92,4 +92,10 @@ public class GoodsController {
         return Result.success(page);
     }
 
+    @GetMapping("/categories")
+    public Result getCategories() {
+        List<String> categories = goodsService.getCategories();
+        return Result.success(categories);
+    }
+
 }
