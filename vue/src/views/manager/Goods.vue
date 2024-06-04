@@ -127,8 +127,15 @@ export default {
     handleEdit(row) {
       this.form = JSON.parse(JSON.stringify(row))
       this.newCategory = '';
-      this.selectedStation = this.form.stationId;
-      this.updateStorage();
+      this.$request.get(`/station-goods/selectByGoodsId/${this.form.id}`).then(res => {
+        if (res.code === '200') {
+          const stationGoods = res.data;
+          if (stationGoods) {
+            this.form.stationId = stationGoods.stationId;
+            this.updateStorage();
+          }
+        }
+      });
       this.fromVisible = true
     },
     save() {

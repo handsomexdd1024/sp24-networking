@@ -2,7 +2,11 @@ package com.example.service;
 
 
 import com.example.entity.Goods;
+import com.example.entity.Station;
+import com.example.entity.StationGoods;
 import com.example.mapper.GoodsMapper;
+import com.example.mapper.StationMapper;
+import com.example.mapper.StationGoodsMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Service;
@@ -17,6 +21,12 @@ public class GoodsService {
     @Resource
     private GoodsMapper goodsMapper;
 
+    @Resource
+    private StationGoodsMapper stationGoodsMapper;
+
+    @Resource
+    private StationMapper stationMapper;
+
     public int add(Goods goods) {
         if (goods != null) {
             goodsMapper.insert(goods);
@@ -29,6 +39,17 @@ public class GoodsService {
      * 删除
      */
     public void deleteById(Integer id) {
+        // 查找与此货物关联的station_goods记录
+        StationGoods stationGoods = stationGoodsMapper.selectByGoodsId(id);
+        if (stationGoods != null) {
+            // 更新站点的存储量
+            Station station = stationMapper.selectById(stationGoods.getStationId());
+            station.setStorage(station.getStorage() + stationGoods.getQuantity());
+            stationMapper.updateById(station);
+            // 删除station_goods记录
+            stationGoodsMapper.deleteById(stationGoods.getId());
+        }
+        // 删除goods记录
         goodsMapper.deleteById(id);
     }
 
@@ -46,6 +67,15 @@ public class GoodsService {
      */
     public void updateById(Goods goods) {
         goodsMapper.updateById(goods);
+        // 这里添加更新station_goods表和stations表逻辑
+        StationGoods stationGoods = stationGoodsMapper.selectByGoodsId(goods.getId());
+        if (stationGoods != null) {
+            Station station = stationMapper.selectById(stationGoods.getStationId());
+            station.setStorage(station.getStorage() + stationGoods.getQuantity() - goods.getQuantity());
+            stationMapper.updateById(station);
+            stationGoods.setQuantity(goods.getQuantity());
+            stationGoodsMapper.updateById(stationGoods);
+        }
     }
 
     /**

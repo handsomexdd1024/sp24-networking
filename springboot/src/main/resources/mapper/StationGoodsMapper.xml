@@ -28,6 +28,13 @@
         where station_id = #{stationId}
     </select>
 
+    <select id="selectByGoodsId" resultType="com.example.entity.StationGoods">
+        select
+        <include refid="Base_Column_List" />
+        from station_goods
+        where goods_id = #{goodsId}
+    </select>
+
 
     <delete id="deleteById">
         delete from station_goods
@@ -48,7 +55,7 @@
         </trim>
     </insert>
 
-    <update id="updateById" parameterType="com.example.entity.StationGoods">
+    <update id="updateById" parameterType="com.example.entity.StationGoods" keyProperty="id">
         update station_goods
         <set>
             <if test="stationId != null">

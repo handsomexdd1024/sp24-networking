@@ -48,7 +48,7 @@
         </trim>
     </insert>
 
-    <update id="updateById" parameterType="com.example.entity.Goods" >
+    <update id="updateById" parameterType="com.example.entity.Goods" keyProperty="id">
         update goods
         <set>
             <if test="name != null">

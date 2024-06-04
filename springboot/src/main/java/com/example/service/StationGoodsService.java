@@ -30,30 +30,32 @@ public class StationGoodsService {
         }
     }
 
-
-
     public void deleteById(Integer id) {
         StationGoods stationGoods = stationGoodsMapper.selectById(id);
-        stationGoodsMapper.deleteById(id);
-        // 更新站点存储量
-        Station station = stationMapper.selectById(stationGoods.getStationId());
-        station.setStorage(station.getStorage() + stationGoods.getQuantity());
-        stationMapper.updateById(station);
+        if (stationGoods != null) {
+            stationGoodsMapper.deleteById(id);
+            // 更新站点存储量
+            Station station = stationMapper.selectById(stationGoods.getStationId());
+            station.setStorage(station.getStorage() + stationGoods.getQuantity());
+            stationMapper.updateById(station);
+        }
     }
 
     public void deleteBatch(List<Integer> ids) {
         for (Integer id : ids) {
-            stationGoodsMapper.deleteById(id);
+            deleteById(id);  // 使用已有的 deleteById 方法
         }
     }
 
     public void updateById(StationGoods stationGoods) {
         StationGoods oldStationGoods = stationGoodsMapper.selectById(stationGoods.getId());
-        stationGoodsMapper.updateById(stationGoods);
-        // 更新站点存储量
-        Station station = stationMapper.selectById(stationGoods.getStationId());
-        station.setStorage(station.getStorage() + oldStationGoods.getQuantity() - stationGoods.getQuantity());
-        stationMapper.updateById(station);
+        if (oldStationGoods != null) {
+            stationGoodsMapper.updateById(stationGoods);
+            // 更新站点存储量
+            Station station = stationMapper.selectById(stationGoods.getStationId());
+            station.setStorage(station.getStorage() + oldStationGoods.getQuantity() - stationGoods.getQuantity());
+            stationMapper.updateById(station);
+        }
     }
 
     public StationGoods selectById(Integer id) {
@@ -72,5 +74,9 @@ public class StationGoodsService {
 
     public List<StationGoods> selectByStationId(Integer stationId) {
         return stationGoodsMapper.selectByStationId(stationId);
+    }
+
+    public StationGoods selectByGoodsId(Integer goodsId) {
+        return stationGoodsMapper.selectByGoodsId(goodsId);
     }
 }
