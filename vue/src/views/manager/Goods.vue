@@ -11,6 +11,7 @@
       <el-select v-model="selectedStation" placeholder="选择站点" @change="load(1)" style="width: 200px; margin-left: 10px;">
         <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.id"></el-option>
       </el-select>
+      <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
       <el-button type="primary" plain style="margin-left: 10px" @click="handleAdd">新增</el-button>
       <el-button type="danger" plain @click="delBatch">批量删除</el-button>
     </div>
@@ -88,7 +89,12 @@ export default {
       total: 0,
       name: null,
       fromVisible: false,
-      form: {},
+      form: {
+        name: '',
+        category: '',
+        stationId: null,
+        quantity: 0
+      },
       user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
       rules: {
         name: [
@@ -98,7 +104,7 @@ export default {
           {required: true, message: '请选择或输入货物类别', trigger: 'blur', validator: this.validateCategory}
         ],
         stationId: [
-          {required: true, message: '请选择站点', trigger: 'blur'},
+          {required: true, message: '请选择站点', trigger: 'change'},
         ],
         quantity: [
           {required: true, message: '请输入货物量', trigger: 'blur'},
@@ -127,7 +133,10 @@ export default {
       this.fromVisible = true
     },
     handleEdit(row) {
-      this.form = JSON.parse(JSON.stringify(row))
+      this.form = {
+        ...row,
+        stationId: null // 确保初始化时 stationId 为 null
+      };
       this.newCategory = '';
       this.$request.get(`/station-goods/selectByGoodsId/${this.form.id}`).then(res => {
         if (res.code === '200') {
@@ -175,6 +184,7 @@ export default {
                 if (res.code === '200') {
                   this.$message.success('关联成功')
                   this.load(1)
+                  this.loadCategories();
                   this.fromVisible = false
                 } else {
                   this.$message.error(res.msg)
