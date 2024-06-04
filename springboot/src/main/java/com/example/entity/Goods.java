@@ -10,6 +10,8 @@ public class Goods {
     private String category;
     private Integer quantity;
 
+    private String stationName;
+
     public Integer getId() {
         return id;
     }
@@ -40,5 +42,13 @@ public class Goods {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public String getStationName() {
+        return stationName;
+    }
+
+    public void setStationName(String stationName) {
+        this.stationName = stationName;
     }
 }

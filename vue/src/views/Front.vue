@@ -11,6 +11,7 @@
         <div class="front-header-nav">
           <el-menu :default-active="$route.path" mode="horizontal" router>
 						<el-menu-item index="/front/home">首页</el-menu-item>
+            <el-menu-item v-if="user.role ==='ADMIN' || user.role ==='SUPERVISOR'" index="/home">前往管理端</el-menu-item>
           </el-menu>
         </div>
       </div>

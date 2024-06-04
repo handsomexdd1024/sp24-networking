@@ -121,7 +121,8 @@ export default {
                   type: 'scatter',
                   coordinateSystem: 'geo',
                   data: data,
-                  symbolSize: 12,
+                  symbolSize: 16,
+                  zlevel: 4,
                   label: {
                     formatter: '{b}',
                     position: 'right',
@@ -144,7 +145,7 @@ export default {
                       color: '#4fa977',
                       width: 2,
                       opacity: 0.6,
-                      curveness: 0.2
+                      curveness: 0.3
                     }
                   },
                   data: flightLinks
@@ -165,7 +166,7 @@ export default {
                     normal: {
                       color: '#a6c84c',
                       width: 0,
-                      curveness: 0.2
+                      curveness: 0.3
                     }
                   },
                   data: flightLinks
@@ -188,7 +189,8 @@ export default {
                     normal: {
                       color: '#ffde00',
                       width: 5,
-                      opacity: 0.8
+                      opacity: 0.8,
+                      curveness: 0.1,
                     }
                   },
                   data: roadLinks

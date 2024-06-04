@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="search">
-      <el-input placeholder="请输入货物名称查询" style="width: 200px" v-model="name"></el-input>
+      <el-input placeholder="请输入账号查询" style="width: 200px" v-model="username"></el-input>
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
     </div>
@@ -12,14 +12,22 @@
     </div>
 
     <div class="table">
-      <div>站点货物管理</div>
       <el-table :data="tableData" strip @selection-change="handleSelectionChange">
         <el-table-column type="selection" width="55" align="center"></el-table-column>
         <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>
-        <el-table-column prop="name" label="货物名字"></el-table-column>
-        <el-table-column prop="category" label="货物类别"></el-table-column>
-        <el-table-column prop="quantity" label="货物量"></el-table-column>
-        <el-table-column prop="stationName" label="所属站点"></el-table-column>
+        <el-table-column prop="username" label="账号"></el-table-column>
+        <el-table-column prop="name" label="姓名"></el-table-column>
+        <el-table-column prop="phone" label="电话"></el-table-column>
+        <el-table-column prop="email" label="邮箱"></el-table-column>
+        <el-table-column label="头像">
+          <template v-slot="scope">
+            <div style="display: flex; align-items: center">
+              <el-image style="width: 40px; height: 40px; border-radius: 50%" v-if="scope.row.avatar"
+                        :src="scope.row.avatar" :preview-src-list="[scope.row.avatar]"></el-image>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="role" label="角色"></el-table-column>
         <el-table-column label="操作" align="center" width="180">
           <template v-slot="scope">
             <el-button size="mini" type="primary" plain @click="handleEdit(scope.row)">编辑</el-button>
@@ -42,10 +50,30 @@
     </div>
 
 
-    <el-dialog title="编辑货物" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" destroy-on-close>
+    <el-dialog title="管理员" :visible.sync="fromVisible" width="40%" :close-on-click-modal="false" destroy-on-close>
       <el-form :model="form" label-width="100px" style="padding-right: 50px" :rules="rules" ref="formRef">
-        <el-form-item label="货物名称" prop="name">
-          <el-input v-model="form.name" placeholder="站点名称"></el-input>
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="form.username" placeholder="用户名"></el-input>
+        </el-form-item>
+        <el-form-item label="姓名" prop="name">
+          <el-input v-model="form.name" placeholder="姓名"></el-input>
+        </el-form-item>
+        <el-form-item label="电话" prop="phone">
+          <el-input v-model="form.phone" placeholder="电话"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model="form.email" placeholder="邮箱"></el-input>
+        </el-form-item>
+        <el-form-item label="头像">
+          <el-upload
+              class="avatar-uploader"
+              :action="$baseUrl + '/files/upload'"
+              :headers="{ token: user.token }"
+              list-type="picture"
+              :on-success="handleAvatarSuccess"
+          >
+            <el-button type="primary">上传头像</el-button>
+          </el-upload>
         </el-form-item>
       </el-form>
 
@@ -61,20 +89,20 @@
 
 <script>
 export default {
-  name: "Goods",
+  name: "Supervisor",
   data() {
     return {
       tableData: [],  // 所有的数据
       pageNum: 1,   // 当前的页码
       pageSize: 10,  // 每页显示的个数
       total: 0,
-      name: null,
+      username: null,
       fromVisible: false,
       form: {},
       user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
       rules: {
-        name: [
-          {required: true, message: '请输入站点名称', trigger: 'blur'},
+        username: [
+          {required: true, message: '请输入账号', trigger: 'blur'},
         ]
       },
       ids: []
@@ -96,10 +124,9 @@ export default {
       this.$refs.formRef.validate((valid) => {
         if (valid) {
           this.$request({
-            url: this.form.id ? '/goods/update' : '/goods/add',
+            url: this.form.id ? '/supervisor/update' : '/supervisor/add',
             method: this.form.id ? 'PUT' : 'POST',
             data: this.form
-            //   data: this.form    data传给Controller
           }).then(res => {
             if (res.code === '200') {  // 表示成功保存
               this.$message.success('保存成功')
@@ -114,7 +141,7 @@ export default {
     },
     del(id) {   // 单个删除
       this.$confirm('您确定删除吗？', '确认删除', {type: "warning"}).then(response => {
-        this.$request.delete('/goods/delete/' + id).then(res => {
+        this.$request.delete('/supervisor/delete/' + id).then(res => {
           if (res.code === '200') {   // 表示操作成功
             this.$message.success('操作成功')
             this.load(1)
@@ -134,7 +161,7 @@ export default {
         return
       }
       this.$confirm('您确定批量删除这些数据吗？', '确认删除', {type: "warning"}).then(response => {
-        this.$request.delete('/goods/delete/batch', {data: this.ids}).then(res => {
+        this.$request.delete('/supervisor/delete/batch', {data: this.ids}).then(res => {
           if (res.code === '200') {   // 表示操作成功
             this.$message.success('操作成功')
             this.load(1)
@@ -147,11 +174,11 @@ export default {
     },
     load(pageNum) {  // 分页查询
       if (pageNum) this.pageNum = pageNum
-      this.$request.get('/goods/selectPage', {
+      this.$request.get('/supervisor/selectPage', {
         params: {
           pageNum: this.pageNum,
           pageSize: this.pageSize,
-          name: this.name,
+          username: this.username,
         }
       }).then(res => {
         this.tableData = res.data?.list
@@ -159,7 +186,7 @@ export default {
       })
     },
     reset() {
-      this.name = null
+      this.username = null
       this.load(1)
     },
     handleCurrentChange(pageNum) {
