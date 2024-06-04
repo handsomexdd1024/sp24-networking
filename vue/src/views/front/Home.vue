@@ -55,34 +55,42 @@ export default {
             echarts.registerMap('china', chinaJson);
             myChart.hideLoading();
 
+            const chinaBoundary = this.getChinaBoundary(chinaJson);
+
             const geoCoordMap = {};
             const data = this.stations.map(station => {
               geoCoordMap[station.name] = [station.longitude, station.latitude];
               return {
                 name: station.name,
-                value: [station.longitude, station.latitude]
+                value: [station.longitude, station.latitude],
+                storage: station.storage,
+                disableFlag: station.disableFlag
               };
             });
 
-            const createLinkData = (links) => {
+            const createLinkData = (links, color) => {
               const res = [];
               links.forEach(link => {
-                const fromCoord = geoCoordMap[link.fromStationName];
-                const toCoord = geoCoordMap[link.toStationName];
+                let fromCoord = geoCoordMap[link.fromStationName];
+                let toCoord = geoCoordMap[link.toStationName];
                 if (fromCoord && toCoord) {
+                  let adjustedCoords = this.adjustCoordsToBoundary(fromCoord, toCoord, chinaBoundary);
                   res.push({
                     fromName: link.fromStationName,
                     toName: link.toStationName,
-                    coords: [fromCoord, toCoord]
+                    coords: adjustedCoords,
+                    lineStyle: {
+                      color: link.disableFlag === '1' ? 'red' : color
+                    }
                   });
                 }
               });
               return res;
             };
 
-            const flightLinks = createLinkData(this.routes.filter(route => route.routeType === 'flight'));
-            const roadLinks = createLinkData(this.routes.filter(route => route.routeType === 'road'));
-            const railLinks = createLinkData(this.routes.filter(route => route.routeType === 'rail'));
+            const flightLinks = createLinkData(this.routes.filter(route => route.routeType === 'flight'), '#4fa977');
+            const roadLinks = createLinkData(this.routes.filter(route => route.routeType === 'road'), '#ffde00');
+            const railLinks = createLinkData(this.routes.filter(route => route.routeType === 'rail'), '#000000');
 
             const trainPath = 'path://M1705.1,317.7c-90.6,0-164.1-73.5-164.1-164.1S1614.5-10.5,1705.1-10.5S1869.2,63,1869.2,153.6S1795.7,317.7,1705.1,317.7z M1705.1,96.4c-31.6,0-57.3,25.7-57.3,57.3s25.7,57.3,57.3,57.3s57.3-25.7,57.3-57.3S1736.7,96.4,1705.1,96.4z';
             const truckPath = 'path://M1317.6,616.5H410.2c-27.8,0-50.4-22.6-50.4-50.4v-406c0-27.8,22.6-50.4,50.4-50.4h907.3c27.8,0,50.4,22.6,50.4,50.4v406C1368,593.9,1345.4,616.5,1317.6,616.5z M1091.6,616.5h-574c-27.8,0-50.4,22.6-50.4,50.4v70.2c0,27.8,22.6,50.4,50.4,50.4h574c27.8,0,50.4-22.6,50.4-50.4v-70.2C1142,639.1,1119.4,616.5,1091.6,616.5z M492.5,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S437,566.1,492.5,566.1zM1091.6,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S1036.1,566.1,1091.6,566.1z';
@@ -93,7 +101,14 @@ export default {
                 left: 'center'
               },
               tooltip: {
-                trigger: 'item'
+                trigger: 'item',
+                formatter: function (params) {
+                  if (params.seriesType === 'scatter') {
+                    return `${params.name}<br/>经度: ${params.value[0]}<br/>纬度: ${params.value[1]}<br/>仓储量: ${params.data.storage}<br/>可用性: ${params.data.disableFlag === '0' ? '可用' : '不可用'}`;
+                  } else if (params.seriesType === 'lines') {
+                    return `${params.data.fromName} > ${params.data.toName}`;
+                  }
+                }
               },
               geo: {
                 map: 'china',
@@ -120,9 +135,14 @@ export default {
                   name: '站点',
                   type: 'scatter',
                   coordinateSystem: 'geo',
-                  data: data,
-                  symbolSize: 16,
                   zlevel: 4,
+                  data: data.map(station => ({
+                    ...station,
+                    itemStyle: {
+                      color: station.disableFlag === '1' ? 'red' : 'blue'
+                    }
+                  })),
+                  symbolSize: 12,
                   label: {
                     formatter: '{b}',
                     position: 'right',
@@ -145,7 +165,7 @@ export default {
                       color: '#4fa977',
                       width: 2,
                       opacity: 0.6,
-                      curveness: 0.3
+                      curveness: 0.4
                     }
                   },
                   data: flightLinks
@@ -166,7 +186,7 @@ export default {
                     normal: {
                       color: '#a6c84c',
                       width: 0,
-                      curveness: 0.3
+                      curveness: 0.4
                     }
                   },
                   data: flightLinks
@@ -190,7 +210,7 @@ export default {
                       color: '#ffde00',
                       width: 5,
                       opacity: 0.8,
-                      curveness: 0.1,
+                      curveness: 0.1
                     }
                   },
                   data: roadLinks
@@ -239,6 +259,20 @@ export default {
 
             myChart.setOption(option);
           });
+    },
+    getChinaBoundary(chinaJson) {
+      const boundary = [];
+      chinaJson.features.forEach(feature => {
+        feature.geometry.coordinates.forEach(coord => {
+          boundary.push(...coord);
+        });
+      });
+      return boundary;
+    },
+    adjustCoordsToBoundary(fromCoord, toCoord, boundary) {
+      const adjustedCoords = [fromCoord, toCoord];
+      // 在这里添加调整逻辑，将超出边界的点移动到边界内部
+      return adjustedCoords;
     }
   }
 };
