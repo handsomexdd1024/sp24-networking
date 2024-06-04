@@ -1,6 +1,7 @@
 package com.example.controller;
 
 import com.example.common.Result;
+import com.example.common.enums.ResultCodeEnum;
 import com.example.entity.Goods;
 import com.example.service.GoodsService;
 import com.github.pagehelper.PageInfo;
@@ -27,13 +28,14 @@ public class GoodsController {
     private GoodsService goodsService;
 
 
-    /**
-     * 新增
-     */
     @PostMapping("/add")
     public Result add(@RequestBody Goods goods){
-        goodsService.add(goods);
-        return Result.success();
+        int id = goodsService.add(goods);
+        if (id != -1) {
+            return Result.success(id);
+        } else {
+            return Result.error(ResultCodeEnum.valueOf("添加货物失败"));
+        }
     }
 
     /**

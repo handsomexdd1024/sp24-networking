@@ -17,10 +17,12 @@ public class GoodsService {
     @Resource
     private GoodsMapper goodsMapper;
 
-    public void add(Goods goods) {
+    public int add(Goods goods) {
         if (goods != null) {
             goodsMapper.insert(goods);
+            return goods.getId();  // 返回新添加货物的ID
         }
+        return -1;
     }
 
     /**

@@ -141,15 +141,36 @@ export default {
             this.$message.warning('货物量超过了站点的剩余空间');
             return;
           }
+          const method = this.form.id ? 'PUT' : 'POST';
+          const url = this.form.id ? '/goods/update' : '/goods/add';
           this.$request({
-            url: this.form.id ? '/goods/update' : '/goods/add',
-            method: this.form.id ? 'PUT' : 'POST',
+            url,
+            method,
             data: this.form
           }).then(res => {
             if (res.code === '200') {
               this.$message.success('保存成功')
-              this.load(1)
-              this.fromVisible = false
+              const goodsId = this.form.id ? this.form.id : res.data;
+              const stationGoods = {
+                stationId: this.form.stationId,
+                goodsId: goodsId,
+                quantity: this.form.quantity
+              };
+              const sgMethod = this.form.id ? 'PUT' : 'POST';
+              const sgUrl = this.form.id ? '/station-goods/update' : '/station-goods/add';
+              this.$request({
+                url: sgUrl,
+                method: sgMethod,
+                data: stationGoods
+              }).then(res => {
+                if (res.code === '200') {
+                  this.$message.success('关联成功')
+                  this.load(1)
+                  this.fromVisible = false
+                } else {
+                  this.$message.error(res.msg)
+                }
+              });
             } else {
               this.$message.error(res.msg)
             }
@@ -162,7 +183,14 @@ export default {
         this.$request.delete('/goods/delete/' + id).then(res => {
           if (res.code === '200') {
             this.$message.success('操作成功')
-            this.load(1)
+            this.$request.delete('/station-goods/delete/' + id).then(res => {
+              if (res.code === '200') {
+                this.$message.success('关联删除成功')
+                this.load(1)
+              } else {
+                this.$message.error(res.msg)
+              }
+            });
           } else {
             this.$message.error(res.msg)
           }
@@ -181,7 +209,14 @@ export default {
         this.$request.delete('/goods/delete/batch', {data: this.ids}).then(res => {
           if (res.code === '200') {
             this.$message.success('操作成功')
-            this.load(1)
+            this.$request.delete('/station-goods/delete/batch', {data: this.ids}).then(res => {
+              if (res.code === '200') {
+                this.$message.success('关联删除成功')
+                this.load(1)
+              } else {
+                this.$message.error(res.msg)
+              }
+            });
           } else {
             this.$message.error(res.msg)
           }
