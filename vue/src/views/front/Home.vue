@@ -1,5 +1,13 @@
 <template>
   <div class="main-content">
+    <div class="control-panel">
+      <!-- 用户交互的内容可以放在这里 -->
+      <h3 style="text-align: center">用户面板</h3>
+      <el-divider></el-divider>
+      <el-input placeholder="搜索站点" style="margin-bottom: 10px;"></el-input>
+      <el-button type="primary" >搜索</el-button>
+      <!-- 其他控件可以继续添加 -->
+    </div>
     <div id="china-map" style="width: 100%; height: 600px;"></div>
   </div>
 </template>
@@ -281,9 +289,11 @@ export default {
 };
 </script>
 
+
 <style scoped>
 #china-map {
   width: 100%;
   height: 100%;
 }
+@import "@/assets/css/home.css";
 </style>
