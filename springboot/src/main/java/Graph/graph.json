@@ -1,0 +1,20 @@
+{"nodes":[
+  {"latitude":40.7128,"name":"A","longitude":-74.006},
+  {"latitude":34.0522,"name":"B","longitude":-118.2437},
+  {"latitude":41.8781,"name":"C","longitude":-87.6298},
+  {"latitude":29.7604,"name":"D","longitude":-95.3698},
+  {"latitude":78587.0,"name":"E","longitude":74478.0},
+  {"latitude":74524.0,"name":"F","longitude":77.0}],
+
+  "edges":[
+    {"node1":"A","node2":"B","weight":4.0},
+    {"node1":"A","node2":"C","weight":3.0},
+    {"node1":"B","node2":"C","weight":2.0},
+    {"node1":"B","node2":"D","weight":5.0},
+    {"node1":"C","node2":"D","weight":1.0},
+    {"node2":"E","weight":2.0,"node1":"C"},
+    {"node2":"E","weight":5.0,"node1":"B"},
+    {"node2":"E","weight":3.0,"node1":"D"},
+    {"node2":"E", "weight":1.0,"node1":"F"},
+    {"node2":"A","weight":11.0,"node1":"F"}]
+}
