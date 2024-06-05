@@ -3,10 +3,44 @@
     <div class="control-panel">
       <!-- 用户交互的内容可以放在这里 -->
       <h3 style="text-align: center">用户面板</h3>
-      <el-divider></el-divider>
-      <el-input placeholder="搜索站点" style="margin-bottom: 10px;"></el-input>
-      <el-button type="primary" >搜索</el-button>
-      <!-- 其他控件可以继续添加 -->
+      <el-tabs v-model="activeName" @tab-click="handleClick">
+        <el-tab-pane label="模拟调货" name="first">模拟调货</el-tab-pane>
+        <el-tab-pane label="调货记录" name="second">调货记录</el-tab-pane>
+      </el-tabs>
+      <div style="margin-left: 25px">
+        <el-steps :active="active" finish-status="success">
+          <el-step title="步骤 1"></el-step>
+          <el-step title="步骤 2"></el-step>
+          <el-step title="步骤 3"></el-step>
+        </el-steps>
+      </div>
+
+      <el-select v-model="value" style="width: 100%" placeholder="你在哪？">
+        <el-option>
+        </el-option>
+      </el-select>
+      <el-select v-model="value" style="margin-top: 10px;width: 100%" placeholder="请选择你要调货货物类型">
+        <el-option>
+        </el-option>
+      </el-select>
+      <el-input style="margin-top: 10px" placeholder="请输入你要调货货物数量(单位:吨)"></el-input>
+      <div style="margin-top: 10px">选择运输方案</div>
+      <el-tabs v-model="activeName" type="card" style="margin-top: 10px" @tab-click="handleClick">
+        <el-tab-pane label="最快速" name="first">最快速</el-tab-pane>
+        <el-tab-pane label="最经济" name="second">最经济</el-tab-pane>
+      </el-tabs>
+      <el-button type="primary">模拟调货</el-button>
+
+      <div style="margin-top: 20px">模拟调货进度</div>
+      <el-progress :percentage="50"></el-progress>
+      <div style="height: 60px;width: 90%;margin: 0px auto;border: #8c939d 1px solid;border-radius: 10px;margin-top: 20px">
+      </div>
+
+      <div style="display: flex;margin-top: 20px">
+        <el-button type="success">发送请求</el-button>
+        <el-button type="danger">请求调货</el-button>
+      </div>
+
     </div>
     <div id="china-map" style="width: 100%; height: 600px;"></div>
   </div>

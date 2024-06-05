@@ -59,4 +59,14 @@ public interface Constants {
             new City("珠海", 22.2707, 113.5767),
             new City("烟台", 37.4638, 121.4479)
     );
+
+    // 路径运输常量
+    double PLANE_SPEED = 800.0; // km/h
+    double PLANE_COST = 5.0; // 元/吨/千米
+
+    double TRAIN_SPEED = 60.0; // km/h
+    double TRAIN_COST = 1.0; // 元/吨/千米
+
+    double ROAD_SPEED = 100.0; // km/h
+    double ROAD_COST = 2.0; // 元/吨/千米
 }
