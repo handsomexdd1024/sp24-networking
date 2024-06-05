@@ -61,11 +61,11 @@ public interface Constants {
     );
 
     // 路径运输常量
-    double PLANE_SPEED = 800.0; // km/h
-    double PLANE_COST = 5.0; // 元/吨/千米
+    double FLIGHT_SPEED = 800.0; // km/h
+    double FLIGHT_COST = 5.0; // 元/吨/千米
 
-    double TRAIN_SPEED = 60.0; // km/h
-    double TRAIN_COST = 1.0; // 元/吨/千米
+    double RAIL_SPEED = 60.0; // km/h
+    double RAIL_COST = 1.0; // 元/吨/千米
 
     double ROAD_SPEED = 100.0; // km/h
     double ROAD_COST = 2.0; // 元/吨/千米
