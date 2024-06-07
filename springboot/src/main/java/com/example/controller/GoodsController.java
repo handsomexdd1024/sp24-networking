@@ -94,6 +94,15 @@ public class GoodsController {
         return Result.success(page);
     }
 
+    @GetMapping("/selectPageWithStation")
+    public Result selectPageWithStation(Goods goods,
+                                        @RequestParam(defaultValue = "1") Integer pageNum,
+                                        @RequestParam(defaultValue = "10") Integer pageSize,
+                                        @RequestParam(required = false) Integer stationId) {
+        PageInfo<Goods> page = goodsService.selectPageWithStation(goods, pageNum, pageSize, stationId);
+        return Result.success(page);
+    }
+
     @GetMapping("/categories")
     public Result getCategories() {
         List<String> categories = goodsService.getCategories();

@@ -12,7 +12,9 @@ import  Graph.services.BestNode;
 public class test {
     public static void main(String[] args) {
 
-        Graph graph = new Graph("C:\\Users\\Note\\IdeaProjects\\sp24-tsim\\springboot\\src\\main\\java\\Graph\\graph.json");
+        Graph graph = new Graph("D:\\Project Files\\futureNetwork_tsim\\tsim\\springboot\\src\\main\\java\\Graph\\graph.json");
+//        springboot/src/main/java/Graph/graph.json
+//        D:\Project Files\futureNetwork_tsim\tsim\springboot\src\main\java\Graph\graph.json
         graph.loadGraphFromJson();
 
         // 打印图

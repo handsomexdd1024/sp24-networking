@@ -1,6 +1,7 @@
 package com.example.mapper;
 
 import com.example.entity.Goods;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
@@ -34,6 +35,12 @@ public interface GoodsMapper {
       * 查询所有
     */
     List<Goods> selectAll(Goods goods);
+
+    /**
+     * 查询所有根据站点
+     */
+    List<Goods> selectAllWithStation(@Param("goods") Goods goods, @Param("stationId") Integer stationId);
+
 
     List<String> getCategories();
 
