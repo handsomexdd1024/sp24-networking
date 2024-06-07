@@ -29,14 +29,17 @@
         <el-tab-pane label="最快速" name="first">最快速</el-tab-pane>
         <el-tab-pane label="最经济" name="second">最经济</el-tab-pane>
       </el-tabs>
-      <el-button type="primary">模拟调货</el-button>
+      <div style="display: flex ;justify-content: center">
+        <el-button type="primary">模拟调货</el-button>
+      </div>
+
 
       <div style="margin-top: 20px">模拟调货进度</div>
       <el-progress :percentage="50"></el-progress>
       <div style="height: 60px;width: 90%;margin: 0px auto;border: #8c939d 1px solid;border-radius: 10px;margin-top: 20px">
       </div>
 
-      <div style="display: flex;margin-top: 20px">
+      <div style="display: flex;margin-top: 20px;justify-content: center">
         <el-button type="success">发送请求</el-button>
         <el-button type="danger">请求调货</el-button>
       </div>

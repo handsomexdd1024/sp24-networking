@@ -18,6 +18,20 @@
         </where>
     </select>
 
+    <select id="selectAllWithStation" resultType="com.example.entity.Goods">
+        select
+        g.id, g.name, g.category, g.quantity, s.name as stationName
+        from goods g
+        left join station_goods sg on g.id = sg.goods_id
+        left join stations s on sg.station_id = s.id
+        <where>
+            <if test="goods.id != null"> and g.id= #{goods.id}</if>
+            <if test="goods.name != null"> and g.name like concat('%', #{goods.name}, '%')</if>
+            <if test="stationId != null"> and sg.station_id = #{stationId}</if>
+        </where>
+    </select>
+
+
     <select id="selectById" resultType="com.example.entity.Goods">
         select
         <include refid="Base_Column_List" />

@@ -101,6 +101,15 @@ public class GoodsService {
         return PageInfo.of(list);
     }
 
+    /**
+     * 分页查询带站点过滤
+     */
+    public PageInfo<Goods> selectPageWithStation(Goods goods, Integer pageNum, Integer pageSize, Integer stationId) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<Goods> list = goodsMapper.selectAllWithStation(goods, stationId);
+        return PageInfo.of(list);
+    }
+
     public List<String> getCategories() {
         return goodsMapper.getCategories();
     }

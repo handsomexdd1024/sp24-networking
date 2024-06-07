@@ -243,24 +243,22 @@ export default {
       }).catch(() => {})
     },
     load(pageNum) {
-      if (pageNum) this.pageNum = pageNum
+      if (pageNum) this.pageNum = pageNum;
       const params = {
         pageNum: this.pageNum,
         pageSize: this.pageSize,
         name: this.name,
+        stationId: this.selectedStation // 添加 stationId 参数
       };
-      if (this.selectedStation) {
-        params.stationId = this.selectedStation;
-      }
-      this.$request.get('/goods/selectPage', { params }).then(res => {
-        this.tableData = res.data?.list
-        this.total = res.data?.total
-      })
+      this.$request.get('/goods/selectPageWithStation', { params }).then(res => {
+        this.tableData = res.data?.list;
+        this.total = res.data?.total;
+      });
     },
     reset() {
-      this.name = null
-      this.selectedStation = null
-      this.load(1)
+      this.name = null;
+      this.selectedStation = null;
+      this.load(1);
     },
     handleCurrentChange(pageNum) {
       this.load(pageNum)
