@@ -4,7 +4,10 @@ import Graph.Ant.AntColonyOptimization;
 import Graph.graph_base.Graph;
 import Graph.graph_base.Node;
 
+import java.util.Arrays;
 import java.util.List;
+
+import  Graph.services.BestNode;
 
 public class test {
     public static void main(String[] args) {
@@ -16,20 +19,24 @@ public class test {
         System.out.println("Graph:");
         graph.printGraph();
 
-
-
         AntColonyOptimization aco = new AntColonyOptimization(graph, 0.1, 5.0, 0.5, 12000);
-        Node startNode = graph.findNode("A");
-        Node endNode = graph.findNode("E");
+        // 示例字符串列表
+        List<String> stringList = Arrays.asList("A", "B", "C", "D","F");
+        BestNode bestNode = new BestNode(stringList);
+        // 调用 traverseAndPrintList 方法
+        System.out.println("Traversing String List:");
 
-        if (startNode != null && endNode != null) {
-            List<Node> shortestPath = aco.findShortestPath(startNode, endNode, 10, 100);
-            double pathLength = aco.calculatePathLength(shortestPath);
-            System.out.println("Shortest Path: " + shortestPath+"\n");
-            System.out.println("Path length:"+pathLength+"\n");
+        // 找到距离目标节点最近的节点
+        Node targetNode = graph.findNode("E");
+        if (targetNode != null) {
+            Node closestNode = bestNode.findClosestNode(aco, graph, targetNode);
+            if (closestNode != null) {
+                System.out.println("Closest Node to " + targetNode.name + " is " + closestNode.name);
+            } else {
+                System.out.println("No closest node found.");
+            }
         } else {
-            System.out.println("Start or end node not found in the graph.");
+            System.out.println("Target node not found in the graph.");
         }
-
     }
 }
