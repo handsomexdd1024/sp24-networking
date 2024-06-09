@@ -78,4 +78,11 @@
         where id = #{id} 
     </update>
 
+
+    <select id="getTypeAndNum" resultType="com.example.entity.GoodsTypeNum">
+        SELECT category, SUM(quantity) AS quantity
+        FROM goods
+        GROUP BY category
+    </select>
+
 </mapper>

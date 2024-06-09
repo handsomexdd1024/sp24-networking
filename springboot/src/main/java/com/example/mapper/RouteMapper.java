@@ -42,4 +42,10 @@ public interface RouteMapper {
      * 查询是否有重复
      */
     Route selectByFromToType(@Param("fromStationId") Integer fromStationId, @Param("toStationId") Integer toStationId, @Param("routeType") String routeType);
+
+    int getRoad();
+
+    int getRail();
+
+    int getFlight();
 }

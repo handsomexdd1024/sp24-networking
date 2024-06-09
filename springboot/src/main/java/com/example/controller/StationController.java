@@ -7,7 +7,10 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.example.common.City;
 import com.example.common.Constants;
@@ -85,6 +88,27 @@ public class StationController {
     }
 
     /**
+     * 查询所有站点名字
+     */
+    @GetMapping("/getAllName")
+    public Result getAllName(Station station ) {
+        List<Station> list = stationService.selectAll(station);
+        List<String> nameList = new ArrayList<>();
+        List<Integer> storageList = new ArrayList<>();
+        Map<List<String>,List<Integer>> nameAndStorage = new HashMap<>();
+        for(Station st : list){
+            nameList.add(st.getName());
+            storageList.add(st.getStorage());
+        }
+        nameAndStorage.put(nameList,storageList);
+        List list2 = new ArrayList<>();
+        list2.add(nameList);
+        list2.add(storageList);
+        return Result.success(list2);
+    }
+
+
+    /**
      * 分页查询
      */
     @GetMapping("/selectPage")
@@ -101,6 +125,19 @@ public class StationController {
     @GetMapping("/allCities")
     public Result getAllCities() {
         return Result.success(Constants.ALL_CITIES);
+    }
+
+    /**
+     * 获取仓库可用/不可用数量
+     */
+    @GetMapping("/isAvailable")
+    public Result isAvailable() {
+        List<Integer> list = new ArrayList<>();
+        int available = stationService.getAvailable();
+        int disAvailable = stationService.getDisavailable();
+        list.add(available);
+        list.add(disAvailable);
+        return Result.success(list);
     }
 
 }

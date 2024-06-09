@@ -72,4 +72,18 @@
         where id = #{id} 
     </update>
 
+    <select id="getAvailable" resultType="int">
+        select count(*)
+        from stations
+        where disable_flag = '0'
+    </select>
+
+    <select id="getDisavailable" resultType="int">
+        select count(*)
+        from stations
+        where disable_flag = '1'
+    </select>
+
+
+
 </mapper>

@@ -2,6 +2,7 @@ package com.example.service;
 
 
 import com.example.entity.Goods;
+import com.example.entity.GoodsTypeNum;
 import com.example.entity.Station;
 import com.example.entity.StationGoods;
 import com.example.mapper.GoodsMapper;
@@ -113,5 +114,12 @@ public class GoodsService {
     public List<String> getCategories() {
         return goodsMapper.getCategories();
     }
+
+
+    public List<GoodsTypeNum> getTypeAndNum(){
+        return goodsMapper.getTypeAndNum();
+    }
+
+
 
 }
