@@ -90,4 +90,21 @@
         where id = #{id} 
     </update>
 
+    <select id="getRoad" resultType="int">
+        select count(*)
+        from routes
+        where route_type = 'road'
+    </select>
+
+    <select id="getRail" resultType="int">
+        select count(*)
+        from routes
+        where route_type = 'rail'
+    </select>
+
+    <select id="getFlight" resultType="int">
+        select count(*)
+        from routes
+        where route_type = 'flight'
+    </select>
 </mapper>

@@ -1,6 +1,7 @@
 package com.example.mapper;
 
 import com.example.entity.Goods;
+import com.example.entity.GoodsTypeNum;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -44,4 +45,7 @@ public interface GoodsMapper {
 
     List<String> getCategories();
 
+
+
+    List<GoodsTypeNum> getTypeAndNum();
 }

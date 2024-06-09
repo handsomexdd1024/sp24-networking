@@ -90,4 +90,23 @@ public class RouteService {
         return PageInfo.of(list);
     }
 
+    /**
+     * 获取类型为公路的路线的数量
+     */
+    public int getRoad(){
+        return routeMapper.getRoad();
+    }
+    /**
+     * 获取类型为铁路的路线的数量
+     */
+    public int getRail(){
+        return routeMapper.getRail();
+    }
+    /**
+     * 获取类型为空运的路线的数量
+     */
+    public int getFlight(){
+        return routeMapper.getFlight();
+    }
+
 }

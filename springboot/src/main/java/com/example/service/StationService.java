@@ -68,6 +68,7 @@ public class StationService {
         return stationMapper.selectAll(station);
     }
 
+
     /**
      * 分页查询
      */
@@ -77,4 +78,17 @@ public class StationService {
         return PageInfo.of(list);
     }
 
+    /**
+     * 可用数量
+     */
+    public int getAvailable(){
+        return stationMapper.getAvailable();
+    }
+
+    /**
+     * 不可用数量
+     */
+    public int getDisavailable(){
+        return stationMapper.getDisavailable();
+    }
 }

@@ -7,6 +7,7 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -101,6 +102,18 @@ public class RouteController {
                                         @RequestParam(required = false) String keyword) {
         PageInfo<Route> page = routeService.selectPageWithKeyWord(route, keyword, pageNum, pageSize);
         return Result.success(page);
+    }
+
+    /**
+     * 获取路线类型的数量
+     */
+    @GetMapping("/getRouteTypeNum")
+    public Result getRouteTypeNum() {
+        List<Integer> list = new ArrayList<>();
+        list.add(routeService.getRoad());
+        list.add(routeService.getRail());
+        list.add(routeService.getFlight());
+        return Result.success(list);
     }
 
 }

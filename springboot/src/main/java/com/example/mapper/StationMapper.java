@@ -2,6 +2,7 @@ package com.example.mapper;
 
 import com.example.entity.Station;
 import org.apache.ibatis.annotations.Select;
+import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
@@ -34,5 +35,15 @@ public interface StationMapper {
       * 查询所有
     */
     List<Station> selectAll(Station station);
+
+    /**
+     * 可用数量
+     */
+    int getAvailable();
+
+    /**
+     * 不可用数量
+     */
+    int getDisavailable();
 
 }
