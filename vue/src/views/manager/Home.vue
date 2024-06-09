@@ -4,11 +4,11 @@
       您好，{{ user?.name }}！欢迎使用本系统
     </div>
 
-    <div style="display: flex; margin: 10px 0">
+    <div style="margin: 10px 0">
       <div style="width: 100%;" class="card">
         <div style="margin-bottom: 30px; font-size: 20px; font-weight: bold">公告列表</div>
-        <div >
-          <el-timeline  reverse slot="reference">
+        <div>
+          <el-timeline reverse slot="reference">
             <el-timeline-item v-for="item in notices" :key="item.id" :timestamp="item.time">
               <el-popover
                   placement="right"
@@ -22,19 +22,13 @@
         </div>
       </div>
 
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+        <div style="width: 48%; height: 300px;" class="card" id="standStorage"></div>
+        <div style="width: 48%; height: 300px;" class="card" id="standAvaliable"></div>
+        <div style="width: 48%; height: 300px;" class="card" id="routeType"></div>
+        <div style="width: 48%; height: 300px;" class="card" id="goodsType"></div>
+      </div>
     </div>
-    <div style="width: 50%;height: 300px" class="card" id="standStorage">
-
-    </div>
-    <div style="width: 50%;height: 300px" class="card" id="standAvaliable">
-
-    </div>
-    <div style="width: 50%;height: 300px" class="card" id="routeType">
-
-    </div>
-    <div style="width: 50%;height: 300px" class="card" id="goodsType">
-
-  </div>
   </div>
 </template>
 
@@ -43,24 +37,24 @@ import * as echarts from 'echarts';
 
 //站点仓储量表格
 let storageBar = {
-      xAxis: {
-        type: 'category',
-        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-      },
-      yAxis: {
-        type: 'value'
-      },
-      series: [
-        {
-          data: [120, 100, 150, 80, 70, 110, 130],
-          type: 'bar',
-          showBackground: true,
-          backgroundStyle: {
-            color: 'rgba(180, 180, 180, 0.2)'
-          }
-        }
-      ]
-    };
+  xAxis: {
+    type: 'category',
+    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  },
+  yAxis: {
+    type: 'value'
+  },
+  series: [
+    {
+      data: [120, 100, 150, 80, 70, 110, 130],
+      type: 'bar',
+      showBackground: true,
+      backgroundStyle: {
+        color: 'rgba(180, 180, 180, 0.2)'
+      }
+    }
+  ]
+};
 
 //站点可用性统计饼状图
 let storagePie = {

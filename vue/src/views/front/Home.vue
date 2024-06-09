@@ -1,52 +1,59 @@
 <template>
   <div class="main-content">
-    <div class="control-panel" v-if="user.role ==='USER'">
+    <div class="control-panel" v-if="user.role === 'USER'">
       <!-- 用户交互的内容可以放在这里 -->
       <h3 style="text-align: center">用户面板</h3>
-      <el-tabs v-model="activeName" @tab-click="handleClick">
-        <el-tab-pane label="模拟调货" name="first">模拟调货</el-tab-pane>
-        <el-tab-pane label="调货记录" name="second">调货记录</el-tab-pane>
+      <el-tabs v-model="activeName" @tab-click="handleSurfaceClick">
+        <el-tab-pane label="模拟调货" name="first"></el-tab-pane>
+        <el-tab-pane label="调货记录" name="second"></el-tab-pane>
       </el-tabs>
-      <div style="margin-left: 25px">
-        <el-steps :active="active" finish-status="success">
-          <el-step title="步骤 1"></el-step>
-          <el-step title="步骤 2"></el-step>
-          <el-step title="步骤 3"></el-step>
-        </el-steps>
-      </div>
+      <div v-if="activeName === 'first'" class="simulate">
+        <div style="margin-left: 25px">
+          <el-steps :active="activeStep" finish-status="success">
+            <el-step title="选择地点"></el-step>
+            <el-step title="选择货物"></el-step>
+            <el-step title="选择方案"></el-step>
+          </el-steps>
+        </div>
 
-      <el-select v-model="selectedStation" style="width: 100%" placeholder="你在哪？">
-        <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.name"></el-option>
-      </el-select>
-      <el-select v-model="selectedCategory" style="margin-top: 10px;width: 100%" placeholder="请选择你要调货货物类型" @change="disableGoods">
-        <el-option v-for="category in categories" :key="category" :label="category" :value="category"></el-option>
-      </el-select>
-      <el-select v-model="selectedGoods" style="margin-top: 10px;width: 100%" placeholder="请选择你要调货货物名称" @change="disableCategory" :disabled="disableGoodsSelect">
-        <el-option v-for="goods in goodsList" :key="goods.id" :label="goods.name" :value="goods.name"></el-option>
-      </el-select>
-      <el-input v-model="quantity" style="margin-top: 10px" placeholder="请输入你要调货货物数量(单位:吨)"></el-input>
-      <div style="margin-top: 10px">选择运输方案</div>
-      <el-tabs v-model="transportScheme" type="card" style="margin-top: 10px" @tab-click="handleClick">
-        <el-tab-pane label="蚁群最短路径" name="antFastest">蚁群最短路径</el-tab-pane>
-        <el-tab-pane label="最快速" name="fastest">最快速</el-tab-pane>
-        <el-tab-pane label="最经济" name="economic">最经济</el-tab-pane>
-      </el-tabs>
-      <div style="display: flex ;justify-content: center">
-        <el-button type="primary" @click="simulateDispatch">模拟调货</el-button>
-      </div>
+        <el-select v-model="selectedStation" style="width: 100%" placeholder="你在哪？" @change="updateStep(1)">
+          <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.name"></el-option>
+        </el-select>
+        <el-select v-model="selectedCategory" style="margin-top: 10px; width: 100%" placeholder="请选择你要调货货物类型" @change="updateStep(2)">
+          <el-option v-for="category in categories" :key="category" :label="category" :value="category"></el-option>
+        </el-select>
+        <el-select v-model="selectedGoods" style="margin-top: 10px; width: 100%" placeholder="请选择你要调货货物名称" @change="updateStep(2)" :disabled="disableGoodsSelect">
+          <el-option v-for="goods in goodsList" :key="goods.id" :label="goods.name" :value="goods.name"></el-option>
+        </el-select>
+        <el-input v-model="quantity" style="margin-top: 10px" placeholder="请输入你要调货货物数量(单位:吨)" @input="updateStep(2)"></el-input>
 
-      <div style="margin-top: 20px">模拟调货进度</div>
-      <el-progress :percentage="progress"></el-progress>
-      <div class="result" v-html="result">
-      </div>
+        <div style="margin-top: 10px">选择运输方案</div>
+        <el-tabs v-model="transportScheme" type="card" style="margin-top: 10px" @tab-click="updateStep(3)">
+          <el-tab-pane label="最快速" name="fastest"></el-tab-pane>
+          <el-tab-pane label="最经济" name="economic"></el-tab-pane>
+          <el-tab-pane label="蚁群最短路径" name="Ant"></el-tab-pane>
+        </el-tabs>
 
-      <div style="display: flex;margin-top: 20px;justify-content: center">
-        <el-button type="success">发送请求</el-button>
-        <el-button type="danger">请求调货</el-button>
+        <div style="display: flex; justify-content: center; margin-top: 10px">
+          <el-button type="primary" @click="simulateDispatch">模拟调货</el-button>
+          <el-button type="warning" @click="resetFields" style="margin-left: 10px">重置</el-button>
+        </div>
+
+        <div style="margin-top: 20px">模拟调货进度</div>
+        <el-progress :percentage="progress"></el-progress>
+        <div class="result" v-html="result"></div>
+
+        <div style="display: flex; margin-top: 20px; justify-content: center">
+          <el-button type="success">发送请求</el-button>
+          <el-button type="danger">请求调货</el-button>
+        </div>
+      </div>
+      <div v-if="activeName === 'second'" class="records">
+        <div class="records-text" v-html="result"></div>
       </div>
     </div>
 
-    <div class="control-panel" v-if="user.role ==='ADMIN'">
+    <div class="control-panel" v-if="user.role === 'ADMIN'">
       <!-- 管理员交互的内容可以放在这里 -->
       <h3 style="text-align: center">管理员面板</h3>
     </div>
@@ -72,9 +79,11 @@ export default {
       disableGoodsSelect: false,
       disableCategorySelect: false,
       transportScheme: 'fastest',
-      user: JSON.parse(localStorage.getItem("xm-user") || '{}'),
+      user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
       progress: 0,
-      result: ''
+      result: '',
+      activeName: 'first',
+      activeStep: 0,
     };
   },
   mounted() {
@@ -83,7 +92,7 @@ export default {
   methods: {
     fetchData() {
       // 获取站点数据
-      this.$request.get('/station/selectAll').then(res => {
+      this.$request.get('/station/selectAll').then((res) => {
         if (res.code === '200') {
           this.stations = res.data;
           this.checkAndInitChart();
@@ -93,7 +102,7 @@ export default {
       });
 
       // 获取路径数据
-      this.$request.get('/route/selectAll').then(res => {
+      this.$request.get('/route/selectAll').then((res) => {
         if (res.code === '200') {
           this.routes = res.data;
           this.checkAndInitChart();
@@ -103,7 +112,7 @@ export default {
       });
 
       // 获取货物类型和名称数据
-      this.$request.get('/goods/categories').then(res => {
+      this.$request.get('/goods/categories').then((res) => {
         if (res.code === '200') {
           this.categories = res.data;
         } else {
@@ -111,7 +120,7 @@ export default {
         }
       });
 
-      this.$request.get('/goods/selectAll').then(res => {
+      this.$request.get('/goods/selectAll').then((res) => {
         if (res.code === '200') {
           this.goodsList = res.data;
         } else {
@@ -130,25 +139,25 @@ export default {
 
       myChart.showLoading();
       fetch('https://geo.datav.aliyun.com/areas/bound/100000_full.json')
-          .then(response => response.json())
-          .then(chinaJson => {
+          .then((response) => response.json())
+          .then((chinaJson) => {
             echarts.registerMap('china', chinaJson);
             myChart.hideLoading();
 
             const geoCoordMap = {};
-            const data = this.stations.map(station => {
+            const data = this.stations.map((station) => {
               geoCoordMap[station.name] = [station.longitude, station.latitude];
               return {
                 name: station.name,
                 value: [station.longitude, station.latitude],
                 storage: station.storage,
-                disableFlag: station.disableFlag
+                disableFlag: station.disableFlag,
               };
             });
 
             const createLinkData = (links) => {
               const res = [];
-              links.forEach(link => {
+              links.forEach((link) => {
                 const fromCoord = geoCoordMap[link.fromStationName];
                 const toCoord = geoCoordMap[link.toStationName];
                 if (fromCoord && toCoord) {
@@ -157,22 +166,33 @@ export default {
                     toName: link.toStationName,
                     coords: [fromCoord, toCoord],
                     disableFlag: link.disableFlag,
-                    routeType: link.routeType
+                    routeType: link.routeType,
                   });
                 }
               });
               return res;
             };
 
-            const flightLinks = createLinkData(this.routes.filter(route => route.routeType === 'flight'));
-            const roadLinks = createLinkData(this.routes.filter(route => route.routeType === 'road'));
-            const railLinks = createLinkData(this.routes.filter(route => route.routeType === 'rail'));
+            const flightLinks = createLinkData(
+                this.routes.filter((route) => route.routeType === 'flight')
+            );
+            const roadLinks = createLinkData(
+                this.routes.filter((route) => route.routeType === 'road')
+            );
+            const railLinks = createLinkData(
+                this.routes.filter((route) => route.routeType === 'rail')
+            );
 
-            const trainPath = 'path://M1705.1,317.7c-90.6,0-164.1-73.5-164.1-164.1S1614.5-10.5,1705.1-10.5S1869.2,63,1869.2,153.6S1795.7,317.7,1705.1,317.7z M1705.1,96.4c-31.6,0-57.3,25.7-57.3,57.3s25.7,57.3,57.3,57.3s57.3-25.7,57.3-57.3S1736.7,96.4,1705.1,96.4z';
-            const truckPath = 'path://M1317.6,616.5H410.2c-27.8,0-50.4-22.6-50.4-50.4v-406c0-27.8,22.6-50.4,50.4-50.4h907.3c27.8,0,50.4,22.6,50.4,50.4v406C1368,593.9,1345.4,616.5,1317.6,616.5z M1091.6,616.5h-574c-27.8,0-50.4,22.6-50.4,50.4v70.2c0,27.8,22.6,50.4,50.4,50.4h574c27.8,0,50.4-22.6,50.4-50.4v-70.2C1142,639.1,1119.4,616.5,1091.6,616.5z M492.5,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S437,566.1,492.5,566.1zM1091.6,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S1036.1,566.1,1091.6,566.1z';
+            const trainPath =
+                'path://M1705.1,317.7c-90.6,0-164.1-73.5-164.1-164.1S1614.5-10.5,1705.1-10.5S1869.2,63,1869.2,153.6S1795.7,317.7,1705.1,317.7z M1705.1,96.4c-31.6,0-57.3,25.7-57.3,57.3s25.7,57.3,57.3,57.3s57.3-25.7,57.3-57.3S1736.7,96.4,1705.1,96.4z';
+            const truckPath =
+                'path://M1317.6,616.5H410.2c-27.8,0-50.4-22.6-50.4-50.4v-406c0-27.8,22.6-50.4,50.4-50.4h907.3c27.8,0,50.4,22.6,50.4,50.4v406C1368,593.9,1345.4,616.5,1317.6,616.5z M1091.6,616.5h-574c-27.8,0-50.4,22.6-50.4,50.4v70.2c0,27.8,22.6,50.4,50.4,50.4h574c27.8,0,50.4-22.6,50.4-50.4v-70.2C1142,639.1,1119.4,616.5,1091.6,616.5z M492.5,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S437,566.1,492.5,566.1zM1091.6,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S1036.1,566.1,1091.6,566.1z';
 
             const offsetCoords = (coords, offset) => {
-              const theta = Math.atan2(coords[1][1] - coords[0][1], coords[1][0] - coords[0][0]);
+              const theta = Math.atan2(
+                  coords[1][1] - coords[0][1],
+                  coords[1][0] - coords[0][0]
+              );
               const dx = offset * Math.sin(theta);
               const dy = offset * Math.cos(theta);
               return [
@@ -184,30 +204,39 @@ export default {
             const option = {
               title: {
                 text: '中国地图',
-                left: 'center'
+                left: 'center',
               },
               tooltip: {
                 trigger: 'item',
                 formatter: function (params) {
                   if (params.seriesType === 'scatter') {
                     const station = params.data;
-                    return `${station.name}<br/>经度: ${station.value[0]}<br/>纬度: ${station.value[1]}<br/>仓储量: ${station.storage}<br/>可用性: ${station.disableFlag === '0' ? '可用' : '不可用'}`;
+                    return `${station.name}<br/>经度: ${station.value[0]}<br/>纬度: ${station.value[1]}<br/>仓储量: ${station.storage}<br/>可用性: ${
+                        station.disableFlag === '0' ? '可用' : '不可用'
+                    }`;
                   } else if (params.seriesType === 'lines') {
                     const link = params.data;
-                    const routeType = link.routeType === 'flight' ? '航空' : (link.routeType === 'road' ? '公路' : '铁路');
-                    return `路径: ${link.fromName} > ${link.toName}<br/>类型: ${routeType}<br/>可用性: ${link.disableFlag === '0' ? '可用' : '不可用'}`;
+                    const routeType =
+                        link.routeType === 'flight'
+                            ? '航空'
+                            : link.routeType === 'road'
+                                ? '公路'
+                                : '铁路';
+                    return `路径: ${link.fromName} > ${link.toName}<br/>类型: ${routeType}<br/>可用性: ${
+                        link.disableFlag === '0' ? '可用' : '不可用'
+                    }`;
                   }
-                }
+                },
               },
               geo: {
                 map: 'china',
                 roam: true,
                 label: {
-                  show: true
+                  show: true,
                 },
                 itemStyle: {
                   normal: {
-                    borderColor: 'rgba(0, 0, 0, 0.2)'
+                    borderColor: 'rgba(0, 0, 0, 0.2)',
                   },
                   emphasis: {
                     areaColor: null,
@@ -215,9 +244,9 @@ export default {
                     shadowOffsetY: 0,
                     shadowBlur: 20,
                     borderWidth: 0,
-                    shadowColor: 'rgba(0, 0, 0, 0.5)'
-                  }
-                }
+                    shadowColor: 'rgba(0, 0, 0, 0.5)',
+                  },
+                },
               },
               series: [
                 {
@@ -230,20 +259,20 @@ export default {
                   label: {
                     formatter: '{b}',
                     position: 'right',
-                    show: false
+                    show: false,
                   },
                   emphasis: {
                     label: {
-                      show: true
-                    }
+                      show: true,
+                    },
                   },
                   itemStyle: {
                     normal: {
                       color: function (params) {
                         return params.data.disableFlag === '1' ? 'red' : '#738ace';
-                      }
-                    }
-                  }
+                      },
+                    },
+                  },
                 },
                 {
                   name: '飞行路线',
@@ -258,10 +287,10 @@ export default {
                       },
                       width: 4,
                       opacity: 0.6,
-                      curveness: 0.4
-                    }
+                      curveness: 0.4,
+                    },
                   },
-                  data: flightLinks
+                  data: flightLinks,
                 },
                 {
                   name: '飞行路线动态',
@@ -273,16 +302,16 @@ export default {
                     period: 2,
                     trailLength: 0.7,
                     color: '#dffa92',
-                    symbolSize: 5
+                    symbolSize: 5,
                   },
                   lineStyle: {
                     normal: {
                       color: '#a6c84c',
                       width: 0,
-                      curveness: 0.4
-                    }
+                      curveness: 0.4,
+                    },
                   },
-                  data: flightLinks.filter(link => link.disableFlag === '0')
+                  data: flightLinks.filter((link) => link.disableFlag === '0'),
                 },
                 {
                   name: '公路',
@@ -296,7 +325,7 @@ export default {
                     color: '#ffffff',
                     symbol: truckPath,
                     symbolSize: 10,
-                    trailLength: 0
+                    trailLength: 0,
                   },
                   lineStyle: {
                     normal: {
@@ -306,9 +335,12 @@ export default {
                       width: 5,
                       opacity: 0.8,
                       curveness: 0.1,
-                    }
+                    },
                   },
-                  data: roadLinks.map(link => ({ ...link, coords: offsetCoords(link.coords, 0.1) }))
+                  data: roadLinks.map((link) => ({
+                    ...link,
+                    coords: offsetCoords(link.coords, 0.1),
+                  })),
                 },
                 {
                   name: '铁路',
@@ -322,19 +354,22 @@ export default {
                     symbol: trainPath,
                     color: '#ffffff',
                     symbolSize: 10,
-                    trailLength: 0
+                    trailLength: 0,
                   },
                   lineStyle: {
                     normal: {
                       color: function (params) {
                         return params.data.disableFlag === '1' ? 'red' : '#000000';
                       },
-                      width: 5
-                    }
+                      width: 5,
+                    },
                   },
                   progressiveThreshold: 500,
                   progressive: 200,
-                  data: railLinks.map(link => ({ ...link, coords: offsetCoords(link.coords, -0.1) }))
+                  data: railLinks.map((link) => ({
+                    ...link,
+                    coords: offsetCoords(link.coords, -0.1),
+                  })),
                 },
                 {
                   name: '铁路背景',
@@ -345,13 +380,16 @@ export default {
                   lineStyle: {
                     color: '#fff',
                     width: 4,
-                    type: 'dashed'
+                    type: 'dashed',
                   },
                   progressiveThreshold: 500,
                   progressive: 200,
-                  data: railLinks.map(link => ({ ...link, coords: offsetCoords(link.coords, -0.1) }))
-                }
-              ]
+                  data: railLinks.map((link) => ({
+                    ...link,
+                    coords: offsetCoords(link.coords, -0.1),
+                  })),
+                },
+              ],
             };
 
             myChart.setOption(option);
@@ -365,28 +403,29 @@ export default {
       this.disableCategorySelect = !!this.selectedGoods;
       if (this.disableCategorySelect) this.selectedCategory = '';
     },
-    simulateDispatch() {
-      const params = {
-        targetNodeName: this.selectedStation,
-        goodsNameOrCategory: this.selectedGoods || this.selectedCategory,
-        quantity: this.quantity
-      };
-
-      this.$request.get('/dispatch/findFastestPath', { params }).then(res => {
-        if (res.code === '200') {
-          const path = res.data;
-          let resultHtml = '模拟调货结果：<br>';
-          for (let i = 0; i < path.length - 1; i++) {
-            resultHtml += `从${path[i].name}经过路径(${path[i].name} > ${path[i + 1].name})<br>`;
-          }
-          resultHtml += `到达${path[path.length - 1].name}`;
-          this.result = resultHtml;
-        } else {
-          this.$message.error(res.msg);
-        }
-      });
+    simulateDispatch() {},
+    resetFields() {
+      this.selectedStation = '';
+      this.selectedCategory = '';
+      this.selectedGoods = '';
+      this.quantity = '';
+      this.disableGoodsSelect = false;
+      this.disableCategorySelect = false;
+      this.activeStep = 0;
     },
-  }
+    handleSurfaceClick(tab) {
+      this.activeName = tab.name;
+    },
+    updateStep(step) {
+      if (step === 1 && this.selectedStation) {
+        this.activeStep = 1;
+      } else if (step === 2 && this.selectedCategory && this.selectedGoods && this.quantity) {
+        this.activeStep = 2;
+      } else if (step === 3 && this.transportScheme) {
+        this.activeStep = 3;
+      }
+    }
+  },
 };
 </script>
 
@@ -395,5 +434,5 @@ export default {
   width: 100%;
   height: 100%;
 }
-@import "@/assets/css/home.css";
+@import '@/assets/css/home.css';
 </style>

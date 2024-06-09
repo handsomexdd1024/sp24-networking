@@ -1,9 +1,5 @@
 package com.example.entity;
 
-
-/**
- * 角色用户父类
- */
 public class Route {
     private Integer id;
     private Integer fromStationId;
@@ -11,10 +7,8 @@ public class Route {
     private String routeType;
     private String disableFlag;
 
-
     private String fromStationName;
     private String toStationName;
-
 
     public Integer getId() {
         return id;
@@ -70,5 +64,9 @@ public class Route {
 
     public void setToStationName(String toStationName) {
         this.toStationName = toStationName;
+    }
+
+    public boolean isEnabled() { // 添加 isEnabled 方法
+        return "0".equals(disableFlag);
     }
 }

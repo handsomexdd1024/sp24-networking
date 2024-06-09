@@ -6,6 +6,9 @@ public class StationGoods {
     private Integer goodsId;
     private Integer quantity;
 
+    private String name; // 添加字段
+    private String category; // 添加字段
+
     public Integer getId() {
         return id;
     }
@@ -36,5 +39,21 @@ public class StationGoods {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }
