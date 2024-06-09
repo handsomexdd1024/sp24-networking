@@ -11,3 +11,12 @@
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     z-index: 100;
 }
+
+.result{
+    min-height: 60px;
+    width: 90%;
+    margin: 0px auto;
+    border: #8c939d 1px solid;
+    border-radius: 10px;
+    margin-top: 20px
+}

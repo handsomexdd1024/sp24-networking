@@ -18,7 +18,7 @@
         <el-table-column prop="id" label="序号" width="70" align="center" sortable></el-table-column>
         <el-table-column prop="fromStationName" label="始发站"></el-table-column>
         <el-table-column prop="toStationName" label="终点站"></el-table-column>
-        <el-table-column prop="routeType" label="路线类型"></el-table-column>
+        <el-table-column prop="routeType" label="路线类型" :formatter="formatRouteType"></el-table-column>
         <el-table-column prop="disableFlag" label="路线可用性" :formatter="formatDisableFlag"></el-table-column>
         <el-table-column label="操作" align="center" width="180">
           <template v-slot="scope">
@@ -213,7 +213,18 @@ export default {
     },
     formatDisableFlag(row, column, cellValue) {
       return cellValue === '0' ? '可用' : '不可用';
-    }
+    },
+    formatRouteType(row, column, cellValue){
+      if(cellValue ==='flight'){
+        return '航空'
+      }else if(cellValue ==='road'){
+        return '公路'
+      }else if(cellValue ==='rail'){
+        return '铁路'
+      }
+
+    },
+
   }
 };
 </script>

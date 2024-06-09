@@ -5,13 +5,14 @@
 
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
-    </div>
-
-    <div class="operation">
       <el-select v-model="selectedStation" placeholder="选择站点" @change="load(1)" style="width: 200px; margin-left: 10px;">
         <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.id"></el-option>
       </el-select>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
+
+    </div>
+
+    <div class="operation">
       <el-button type="primary" plain style="margin-left: 10px" @click="handleAdd">新增</el-button>
       <el-button type="danger" plain @click="delBatch">批量删除</el-button>
     </div>

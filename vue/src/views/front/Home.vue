@@ -1,6 +1,6 @@
 <template>
   <div class="main-content">
-    <div class="control-panel">
+    <div class="control-panel" v-if="user.role ==='USER'">
       <!-- 用户交互的内容可以放在这里 -->
       <h3 style="text-align: center">用户面板</h3>
       <el-tabs v-model="activeName" @tab-click="handleClick">
@@ -23,6 +23,10 @@
         <el-option>
         </el-option>
       </el-select>
+      <el-select v-model="value" style="margin-top: 10px;width: 100%" placeholder="请选择你要调货货物名称">
+        <el-option>
+        </el-option>
+      </el-select>
       <el-input style="margin-top: 10px" placeholder="请输入你要调货货物数量(单位:吨)"></el-input>
       <div style="margin-top: 10px">选择运输方案</div>
       <el-tabs v-model="activeName" type="card" style="margin-top: 10px" @tab-click="handleClick">
@@ -36,7 +40,7 @@
 
       <div style="margin-top: 20px">模拟调货进度</div>
       <el-progress :percentage="50"></el-progress>
-      <div style="height: 60px;width: 90%;margin: 0px auto;border: #8c939d 1px solid;border-radius: 10px;margin-top: 20px">
+      <div class="result" >
       </div>
 
       <div style="display: flex;margin-top: 20px;justify-content: center">
@@ -45,6 +49,13 @@
       </div>
 
     </div>
+
+    <div class="control-panel" v-if="user.role ==='ADMIN'">
+      <!-- 管理员交互的内容可以放在这里 -->
+      <h3 style="text-align: center">管理员面板</h3>
+
+    </div>
+
     <div id="china-map" style="width: 100%; height: 600px;"></div>
   </div>
 </template>
@@ -56,7 +67,8 @@ export default {
   data() {
     return {
       stations: [],
-      routes: []
+      routes: [],
+      user: JSON.parse(localStorage.getItem("xm-user") || '{}'),
     };
   },
   mounted() {

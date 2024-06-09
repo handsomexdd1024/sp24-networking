@@ -28,21 +28,21 @@ public class Graph {
         for (Node node : adjacencyList.keySet()) {
             System.out.print(node + ": ");
             for (Edge neighbor : adjacencyList.get(node)) {
-                System.out.print("(" + neighbor.node1 + " <-> " + neighbor.node2 + ", " + neighbor.weight + ") ");
+                System.out.print("(" + neighbor.node1 + " <-> " + neighbor.node2 + ", " + neighbor.weight + " and speed " + neighbor.speed + ") ");
             }
             System.out.println();
         }
     }
 
-    public void addEdge(Node node1, Node node2, double weight) {
+    public void addEdge(Node node1, Node node2, double weight, double speed) {
         adjacencyList.putIfAbsent(node1, new HashSet<>());
         adjacencyList.putIfAbsent(node2, new HashSet<>());
 
         if (!containsEdge(node1, node2)) {
-            Edge edge = new Edge(node1, node2, weight);
+            Edge edge = new Edge(node1, node2, weight, speed);
             adjacencyList.get(node1).add(edge);
             adjacencyList.get(node2).add(edge);
-            saveEdgeToJson(node1, node2, weight); // Save edge to JSON file
+            saveEdgeToJson(node1, node2, weight, speed); // Save edge to JSON file
         }
     }
 
@@ -91,16 +91,23 @@ public class Graph {
                 String name = (String) nodeData.get("name");
                 double latitude = ((Number) nodeData.get("latitude")).doubleValue();
                 double longitude = ((Number) nodeData.get("longitude")).doubleValue();
-                Node node = new Node(name, latitude, longitude);
-                nodeMap.put(name, node);
-                adjacencyList.putIfAbsent(node, new HashSet<>());
+                String disableFlag = (String) nodeData.get("disableFlag");
+                if ("0".equals(disableFlag)) { // 过滤不可用的站点
+                    Node node = new Node(name, latitude, longitude);
+                    nodeMap.put(name, node);
+                    adjacencyList.putIfAbsent(node, new HashSet<>());
+                }
             }
 
             for (Map<String, Object> edgeData : edges) {
                 Node node1 = nodeMap.get(edgeData.get("node1"));
                 Node node2 = nodeMap.get(edgeData.get("node2"));
                 double weight = ((Number) edgeData.get("weight")).doubleValue();
-                addEdge(node1, node2, weight);
+                double speed = ((Number) edgeData.get("speed")).doubleValue(); // 获取速度信息
+                String disableFlag = (String) edgeData.get("disableFlag");
+                if (node1 != null && node2 != null && "0".equals(disableFlag)) { // 过滤不可用的路径
+                    addEdge(node1, node2, weight, speed);
+                }
             }
 
         } catch (IOException e) {
@@ -152,6 +159,7 @@ public class Graph {
                         edgeData.put("node1", edge.node1.name);
                         edgeData.put("node2", edge.node2.name);
                         edgeData.put("weight", edge.weight);
+                        edgeData.put("speed", edge.speed); // 添加速度信息
                         edges.add(edgeData);
                         edgeSet.add(edge);
                     }
@@ -199,7 +207,7 @@ public class Graph {
         }
     }
 
-    public void saveEdgeToJson(Node node1, Node node2, double weight) {
+    public void saveEdgeToJson(Node node1, Node node2, double weight, double speed) {
         try {
             Gson gson = new Gson();
             Type graphType = new TypeToken<Map<String, List<Map<String, Object>>>>() {}.getType();
@@ -223,6 +231,7 @@ public class Graph {
                 edgeData.put("node1", node1.name);
                 edgeData.put("node2", node2.name);
                 edgeData.put("weight", weight);
+                edgeData.put("speed", speed); // 保存速度信息
                 edges.add(edgeData);
 
                 graphData.put("edges", edges);

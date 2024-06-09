@@ -6,16 +6,18 @@ public class Edge {
     public Node node1;
     public Node node2;
     public double weight;
+    public double speed; // 新增速度信息
 
-    public Edge(Node node1, Node node2, double weight) {
+    public Edge(Node node1, Node node2, double weight, double speed) {
         this.node1 = node1;
         this.node2 = node2;
         this.weight = weight;
+        this.speed = speed; // 初始化速度信息
     }
 
     @Override
     public String toString() {
-        return "(" + node1 + " <-> " + node2 + ") with weight " + weight;
+        return "(" + node1 + " <-> " + node2 + ") with weight " + weight + " and speed " + speed;
     }
 
     @Override
