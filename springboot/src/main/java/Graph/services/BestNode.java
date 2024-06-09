@@ -27,7 +27,7 @@ public class BestNode {
             Node currentNode = graph.findNode(nodeName);
             if (currentNode != null) {
                 List<Node> path = aco.findShortestPath(currentNode, targetNode, 10, 100); // 假设使用10个蚂蚁和100次迭代
-                double distance = aco.calculatePathTime(path);
+                double distance = aco.calculatePathLength(path);
                 if (distance < shortestDistance) {
                     shortestDistance = distance;
                     closestNode = currentNode;

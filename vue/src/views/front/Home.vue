@@ -15,45 +15,40 @@
         </el-steps>
       </div>
 
-      <el-select v-model="value" style="width: 100%" placeholder="你在哪？">
-        <el-option>
-        </el-option>
+      <el-select v-model="selectedStation" style="width: 100%" placeholder="你在哪？">
+        <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.name"></el-option>
       </el-select>
-      <el-select v-model="value" style="margin-top: 10px;width: 100%" placeholder="请选择你要调货货物类型">
-        <el-option>
-        </el-option>
+      <el-select v-model="selectedCategory" style="margin-top: 10px;width: 100%" placeholder="请选择你要调货货物类型" @change="disableGoods">
+        <el-option v-for="category in categories" :key="category" :label="category" :value="category"></el-option>
       </el-select>
-      <el-select v-model="value" style="margin-top: 10px;width: 100%" placeholder="请选择你要调货货物名称">
-        <el-option>
-        </el-option>
+      <el-select v-model="selectedGoods" style="margin-top: 10px;width: 100%" placeholder="请选择你要调货货物名称" @change="disableCategory" :disabled="disableGoodsSelect">
+        <el-option v-for="goods in goodsList" :key="goods.id" :label="goods.name" :value="goods.name"></el-option>
       </el-select>
-      <el-input style="margin-top: 10px" placeholder="请输入你要调货货物数量(单位:吨)"></el-input>
+      <el-input v-model="quantity" style="margin-top: 10px" placeholder="请输入你要调货货物数量(单位:吨)"></el-input>
       <div style="margin-top: 10px">选择运输方案</div>
-      <el-tabs v-model="activeName" type="card" style="margin-top: 10px" @tab-click="handleClick">
-        <el-tab-pane label="最快速" name="first">最快速</el-tab-pane>
-        <el-tab-pane label="最经济" name="second">最经济</el-tab-pane>
+      <el-tabs v-model="transportScheme" type="card" style="margin-top: 10px" @tab-click="handleClick">
+        <el-tab-pane label="蚁群最短路径" name="antFastest">蚁群最短路径</el-tab-pane>
+        <el-tab-pane label="最快速" name="fastest">最快速</el-tab-pane>
+        <el-tab-pane label="最经济" name="economic">最经济</el-tab-pane>
       </el-tabs>
       <div style="display: flex ;justify-content: center">
-        <el-button type="primary">模拟调货</el-button>
+        <el-button type="primary" @click="simulateDispatch">模拟调货</el-button>
       </div>
 
-
       <div style="margin-top: 20px">模拟调货进度</div>
-      <el-progress :percentage="50"></el-progress>
-      <div class="result" >
+      <el-progress :percentage="progress"></el-progress>
+      <div class="result" v-html="result">
       </div>
 
       <div style="display: flex;margin-top: 20px;justify-content: center">
         <el-button type="success">发送请求</el-button>
         <el-button type="danger">请求调货</el-button>
       </div>
-
     </div>
 
     <div class="control-panel" v-if="user.role ==='ADMIN'">
       <!-- 管理员交互的内容可以放在这里 -->
       <h3 style="text-align: center">管理员面板</h3>
-
     </div>
 
     <div id="china-map" style="width: 100%; height: 600px;"></div>
@@ -68,7 +63,18 @@ export default {
     return {
       stations: [],
       routes: [],
+      categories: [],
+      goodsList: [],
+      selectedStation: '',
+      selectedCategory: '',
+      selectedGoods: '',
+      quantity: '',
+      disableGoodsSelect: false,
+      disableCategorySelect: false,
+      transportScheme: 'fastest',
       user: JSON.parse(localStorage.getItem("xm-user") || '{}'),
+      progress: 0,
+      result: ''
     };
   },
   mounted() {
@@ -91,6 +97,23 @@ export default {
         if (res.code === '200') {
           this.routes = res.data;
           this.checkAndInitChart();
+        } else {
+          this.$message.error(res.msg);
+        }
+      });
+
+      // 获取货物类型和名称数据
+      this.$request.get('/goods/categories').then(res => {
+        if (res.code === '200') {
+          this.categories = res.data;
+        } else {
+          this.$message.error(res.msg);
+        }
+      });
+
+      this.$request.get('/goods/selectAll').then(res => {
+        if (res.code === '200') {
+          this.goodsList = res.data;
         } else {
           this.$message.error(res.msg);
         }
@@ -333,11 +356,39 @@ export default {
 
             myChart.setOption(option);
           });
-    }
+    },
+    disableGoods() {
+      this.disableGoodsSelect = !!this.selectedCategory;
+      if (this.disableGoodsSelect) this.selectedGoods = '';
+    },
+    disableCategory() {
+      this.disableCategorySelect = !!this.selectedGoods;
+      if (this.disableCategorySelect) this.selectedCategory = '';
+    },
+    simulateDispatch() {
+      const params = {
+        targetNodeName: this.selectedStation,
+        goodsNameOrCategory: this.selectedGoods || this.selectedCategory,
+        quantity: this.quantity
+      };
+
+      this.$request.get('/dispatch/findFastestPath', { params }).then(res => {
+        if (res.code === '200') {
+          const path = res.data;
+          let resultHtml = '模拟调货结果：<br>';
+          for (let i = 0; i < path.length - 1; i++) {
+            resultHtml += `从${path[i].name}经过路径(${path[i].name} > ${path[i + 1].name})<br>`;
+          }
+          resultHtml += `到达${path[path.length - 1].name}`;
+          this.result = resultHtml;
+        } else {
+          this.$message.error(res.msg);
+        }
+      });
+    },
   }
 };
 </script>
-
 
 <style scoped>
 #china-map {

@@ -3,31 +3,30 @@ package Graph;
 import Graph.Ant.AntColonyOptimization;
 import Graph.graph_base.Graph;
 import Graph.graph_base.Node;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.Arrays;
 import java.util.List;
 
-import Graph.services.BestNode;
+import  Graph.services.BestNode;
 
 public class test {
     public static void main(String[] args) {
-        // 初始化Spring上下文
-        ApplicationContext context = new AnnotationConfigApplicationContext("com.example");
 
-        // 获取Graph和ACO bean
-        Graph graph = context.getBean(Graph.class);
-        AntColonyOptimization aco = context.getBean(AntColonyOptimization.class);
+        Graph graph = new Graph("D:\\Project Files\\futureNetwork_tsim\\tsim\\springboot\\src\\main\\java\\Graph\\graph.json");
+//        springboot/src/main/java/Graph/graph.json
+//        D:\Project Files\futureNetwork_tsim\tsim\springboot\src\main\java\Graph\graph.json
+        graph.loadGraphFromJson();
 
         // 打印图
         System.out.println("Graph:");
-        graph.loadGraphFromDatabase();  // 从数据库加载图数据
         graph.printGraph();
 
+        AntColonyOptimization aco = new AntColonyOptimization(graph, 0.1, 5.0, 0.5, 12000);
         // 示例字符串列表
-        List<String> stringList = Arrays.asList("A", "B", "C", "D", "F");
+        List<String> stringList = Arrays.asList("A", "B", "C", "D","F");
         BestNode bestNode = new BestNode(stringList);
+        // 调用 traverseAndPrintList 方法
+        System.out.println("Traversing String List:");
 
         // 找到距离目标节点最近的节点
         Node targetNode = graph.findNode("E");

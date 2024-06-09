@@ -22,6 +22,4 @@ public interface StationGoodsMapper {
 
     StationGoods selectByGoodsId(@Param("goodsId") Integer goodsId);
 
-    List<Integer> selectStationsWithGoods(@Param("goodsNameOrCategory") String goodsNameOrCategory,
-                                          @Param("quantity") int quantity);
 }

@@ -34,17 +34,7 @@
         from station_goods
         where goods_id = #{goodsId}
     </select>
-
-    <select id="selectStationsWithGoods" parameterType="map" resultType="java.lang.Integer">
-        SELECT sg.station_id
-        FROM station_goods sg
-                 JOIN goods g ON sg.goods_id = g.id
-                 JOIN stations s ON sg.station_id = s.id
-        WHERE (g.name = #{goodsNameOrCategory} OR g.category = #{goodsNameOrCategory})
-          AND sg.quantity >= #{quantity}
-          AND s.disable_flag = '0'
-          AND sg.quantity > 0
-    </select>
+    
 
 
     <delete id="deleteById">

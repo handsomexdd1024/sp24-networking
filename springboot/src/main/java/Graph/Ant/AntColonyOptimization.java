@@ -50,7 +50,7 @@ public class AntColonyOptimization {
                 while (!current.equals(end)) {
                     path.add(current);
                     visited.add(current);
-                    Node nextNode = selectNextNode(current, visited,end);
+                    Node nextNode = selectNextNode(current, visited);
                     if (nextNode == null) {
                         break;
                     }
@@ -63,7 +63,7 @@ public class AntColonyOptimization {
 
                 path.add(end);
 
-                double length = calculatePathTime(path);
+                double length = calculatePathLength(path);
                 allPaths.add(path);
                 allLengths.add(length);
 
@@ -78,56 +78,20 @@ public class AntColonyOptimization {
 
         return bestPath;
     }
-//    原版selectNextNode
-//    private Node selectNextNode(Node current, Set<Node> visited) {
-//        List<Edge> edges = new ArrayList<>(graph.getEdges(current));
-//        double[] probabilities = new double[edges.size()];
-//        double sum = 0.0;
-//
-//        for (int i = 0; i < edges.size(); i++) {
-//            Edge edge = edges.get(i);
-//            if (!visited.contains(edge.node1)) {
-//                probabilities[i] = Math.pow(pheromones.get(current).get(edge.node1), alpha)
-//                        * Math.pow(1.0 / edge.weight, beta);
-//                sum += probabilities[i];
-//            } else if (!visited.contains(edge.node2)) {
-//                probabilities[i] = Math.pow(pheromones.get(current).get(edge.node2), alpha)
-//                        * Math.pow(1.0 / edge.weight, beta);
-//                sum += probabilities[i];
-//            }
-//        }
-//
-//        if (sum == 0.0) return null;
-//
-//        double random = Math.random() * sum;
-//        for (int i = 0; i < edges.size(); i++) {
-//            Edge edge = edges.get(i);
-//            if (!visited.contains(edge.node1)) {
-//                random -= probabilities[i];
-//                if (random <= 0.0) {
-//                    return edge.node1;
-//                }
-//            } else if (!visited.contains(edge.node2)) {
-//                random -= probabilities[i];
-//                if (random <= 0.0) {
-//                    return edge.node2;
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }
 
-    private Node selectNextNode(Node current, Set<Node> visited, Node end) {
+    private Node selectNextNode(Node current, Set<Node> visited) {
         List<Edge> edges = new ArrayList<>(graph.getEdges(current));
         double[] probabilities = new double[edges.size()];
         double sum = 0.0;
 
         for (int i = 0; i < edges.size(); i++) {
             Edge edge = edges.get(i);
-            Node nextNode = edge.node1.equals(current) ? edge.node2 : edge.node1;
-            if (!visited.contains(nextNode) && nextNode.equals(end)) {
-                probabilities[i] = Math.pow(pheromones.get(current).get(nextNode), alpha)
+            if (!visited.contains(edge.node1)) {
+                probabilities[i] = Math.pow(pheromones.get(current).get(edge.node1), alpha)
+                        * Math.pow(1.0 / edge.weight, beta);
+                sum += probabilities[i];
+            } else if (!visited.contains(edge.node2)) {
+                probabilities[i] = Math.pow(pheromones.get(current).get(edge.node2), alpha)
                         * Math.pow(1.0 / edge.weight, beta);
                 sum += probabilities[i];
             }
@@ -138,11 +102,15 @@ public class AntColonyOptimization {
         double random = Math.random() * sum;
         for (int i = 0; i < edges.size(); i++) {
             Edge edge = edges.get(i);
-            Node nextNode = edge.node1.equals(current) ? edge.node2 : edge.node1;
-            if (!visited.contains(nextNode) && nextNode.equals(end)) {
+            if (!visited.contains(edge.node1)) {
                 random -= probabilities[i];
                 if (random <= 0.0) {
-                    return nextNode;
+                    return edge.node1;
+                }
+            } else if (!visited.contains(edge.node2)) {
+                random -= probabilities[i];
+                if (random <= 0.0) {
+                    return edge.node2;
                 }
             }
         }
@@ -150,40 +118,21 @@ public class AntColonyOptimization {
         return null;
     }
 
-
-//    原版 calculatePathLength 方法
-//    public double calculatePathLength(List<Node> path) {
-//        double length = 0.0;
-//        for (int i = 0; i < path.size() - 1; i++) {
-//            Node current = path.get(i);
-//            Node next = path.get(i + 1);
-//            for (Edge edge : graph.getEdges(current)) {
-//                if ((edge.node1.equals(current) && edge.node2.equals(next)) ||
-//                        (edge.node1.equals(next) && edge.node2.equals(current))) {
-//                    length += edge.weight;
-//                    break;
-//                }
-//            }
-//        }
-//        return length;
-//    }
-
-    public double calculatePathTime(List<Node> path) {
-        double time = 0.0;
+    public double calculatePathLength(List<Node> path) {
+        double length = 0.0;
         for (int i = 0; i < path.size() - 1; i++) {
             Node current = path.get(i);
             Node next = path.get(i + 1);
             for (Edge edge : graph.getEdges(current)) {
                 if ((edge.node1.equals(current) && edge.node2.equals(next)) ||
                         (edge.node1.equals(next) && edge.node2.equals(current))) {
-                    time += edge.weight / edge.speed; // 使用时间计算
+                    length += edge.weight;
                     break;
                 }
             }
         }
-        return time;
+        return length;
     }
-
 
     private void updatePheromones(List<List<Node>> allPaths, List<Double> allLengths) {
         for (Node node : pheromones.keySet()) {
