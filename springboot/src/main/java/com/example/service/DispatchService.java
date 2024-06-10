@@ -69,17 +69,18 @@ public class DispatchService {
         // 计算最长时间和总成本
         double maxTime = 0;
         double totalCost = 0;
-        for (PathNode path : initialPaths) {
+        for (PathNode path : result.getUsedPaths()) {
             if (path.getTotalTime() > maxTime) {
                 maxTime = path.getTotalTime();
             }
-            totalCost += calculatePathCost(path);
+            totalCost += calculatePathCost(path, result);
         }
         result.setMaxTime(maxTime);
         result.setTotalCost(totalCost);
 
         return result;
     }
+
 
     private int dispatchFromPaths(List<PathNode> paths, int targetStationId, String goodsName, int quantity, DispatchResult result) {
         int remainingQuantity = quantity;
@@ -90,20 +91,30 @@ public class DispatchService {
                 if (remainingQuantity <= 0) break;
 
                 int availableQuantity = goods.getQuantity();
-                if (availableQuantity >= remainingQuantity) {
-                    result.addLog(generateLogMessage(path, stationId, targetStationId, remainingQuantity));
-                    updateGoodsQuantity(goods, remainingQuantity);
-                    remainingQuantity = 0;
-                    break;
-                } else {
-                    result.addLog(generateLogMessage(path, stationId, targetStationId, availableQuantity));
-                    updateGoodsQuantity(goods, availableQuantity);
-                    remainingQuantity -= availableQuantity;
+                if (availableQuantity > 0) {
+                    result.addUsedPath(path); // 记录使用的路径
+
+                    // 调试输出
+                    System.out.println("Dispatching from Station ID: " + stationId + " to Target Station ID: " + targetStationId);
+                    System.out.println("Route Type: " + path.getRouteType());
+                    System.out.println("Available Quantity: " + availableQuantity);
+                    System.out.println("Remaining Quantity: " + remainingQuantity);
+
+                    if (availableQuantity >= remainingQuantity) {
+                        result.addLog(generateLogMessage(path, stationId, targetStationId, remainingQuantity));
+                        updateGoodsQuantity(goods, remainingQuantity);
+                        remainingQuantity = 0;
+                    } else {
+                        result.addLog(generateLogMessage(path, stationId, targetStationId, availableQuantity));
+                        updateGoodsQuantity(goods, availableQuantity);
+                        remainingQuantity -= availableQuantity;
+                    }
                 }
             }
         }
         return remainingQuantity;
     }
+
 
     private int dispatchViaTransfer(int targetStationId, String goodsName, int remainingQuantity, DispatchResult result) {
         List<PathNode> initialPaths = findFastestPaths(targetStationId);
@@ -201,14 +212,25 @@ public class DispatchService {
                     nextNode.setStationId(nextStationId);
                     nextNode.setTotalTime(newTotalTime);
                     nextNode.setPrevious(current);
+                    nextNode.setRouteType(route.getRouteType()); // 记录路径类型
                     queue.add(nextNode);
                     bestPaths.put(nextStationId, nextNode);
+
+                    // 调试输出
+                    System.out.println("Selected Path: " + current.getStationId() + " -> " + nextStationId);
+                    System.out.println("Route Type: " + route.getRouteType());
+                    System.out.println("Distance: " + distance);
+                    System.out.println("Speed: " + getSpeed(route.getRouteType()));
+                    System.out.println("Total Time: " + newTotalTime);
                 }
             }
         }
 
         return new ArrayList<>(bestPaths.values());
     }
+
+
+
 
     private double calculateDistance(Station from, Station to) {
         double lat1 = from.getLatitude();
@@ -239,7 +261,7 @@ public class DispatchService {
         }
     }
 
-    private double calculatePathCost(PathNode path) {
+    private double calculatePathCost(PathNode path, DispatchResult result) {
         double totalCost = 0;
         PathNode current = path;
         while (current.getPrevious() != null) {
@@ -250,7 +272,7 @@ public class DispatchService {
 
             if (route != null) {
                 double costPerTonPerKm = getCost(route.getRouteType());
-                totalCost += distance * costPerTonPerKm;
+                totalCost += distance * costPerTonPerKm * result.getTotalDispatched(); // 乘以调度量计算总成本
             }
             current = current.getPrevious();
         }
@@ -263,7 +285,6 @@ public class DispatchService {
                 .findFirst()
                 .orElse(null);
     }
-
 
     private double getCost(String routeType) {
         switch (routeType) {
@@ -299,6 +320,12 @@ public class DispatchService {
             logMessage.append(" (").append(String.join(", ", routeDescriptions)).append(")");
         }
 
+        // 调试输出
+        System.out.println("Generated Log Message: " + logMessage.toString());
+
         return logMessage.toString();
     }
+
+
+
 }
