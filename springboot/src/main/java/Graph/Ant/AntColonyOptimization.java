@@ -52,12 +52,13 @@ public class AntColonyOptimization {
                     visited.add(current);
                     Node nextNode = selectNextNode(current, visited);
                     if (nextNode == null) {
+                        path = null;
                         break;
                     }
                     current = nextNode;
                 }
 
-                if (!current.equals(end)) {
+                if (path == null || !current.equals(end)) {
                     continue; // Skip incomplete paths
                 }
 
@@ -73,11 +74,20 @@ public class AntColonyOptimization {
                 }
             }
 
+            if (allPaths.isEmpty()) {
+                continue; // No paths found in this iteration
+            }
+
             updatePheromones(allPaths, allLengths);
+        }
+
+        if (bestPath == null) {
+            System.out.println("No valid path found from " + start.name + " to " + end.name);
         }
 
         return bestPath;
     }
+
 
     private Node selectNextNode(Node current, Set<Node> visited) {
         List<Edge> edges = new ArrayList<>(graph.getEdges(current));

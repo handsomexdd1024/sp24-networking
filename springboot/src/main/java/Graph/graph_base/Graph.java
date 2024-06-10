@@ -100,7 +100,11 @@ public class Graph {
                 Node node1 = nodeMap.get(edgeData.get("node1"));
                 Node node2 = nodeMap.get(edgeData.get("node2"));
                 double weight = ((Number) edgeData.get("weight")).doubleValue();
-                addEdge(node1, node2, weight);
+                if (node1 != null && node2 != null) {
+                    addEdge(node1, node2, weight);
+                } else {
+                    System.out.println("Edge contains undefined nodes: " + edgeData);
+                }
             }
 
         } catch (IOException e) {

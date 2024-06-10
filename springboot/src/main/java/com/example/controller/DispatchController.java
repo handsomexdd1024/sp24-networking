@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -24,21 +25,16 @@ public class DispatchController {
                                    @RequestParam("goodsName") String goodsName,
                                    @RequestParam("quantity") int quantity) {
         try {
-//            System.out.println("Received targetStationId: " + targetStationId); // 打印接收到的参数
-//            System.out.println("Received goodsName: " + goodsName);
-//            System.out.println("Received quantity: " + quantity);
             dispatchService.loadData();
             DispatchResult result = dispatchService.simulateDispatch(targetStationId, goodsName, quantity);
-            System.out.println("dispatchService dispatchService: " + dispatchService.getOperations());
-
             List<Operation> operations = dispatchService.getOperations();
-            System.out.println("dispatchService result: " + Result.success(new Object[]{result, operations}));
             return Result.success(new Object[]{result, operations});
         } catch (Exception e) {
             e.printStackTrace(); // 打印详细的错误信息
             return Result.error();
         }
     }
+
 
 
 
