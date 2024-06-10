@@ -17,21 +17,21 @@
         </div>
 
         <el-select v-model="selectedStation" style="width: 100%" placeholder="你在哪？" @change="updateStep(1)">
-          <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.name"></el-option>
+          <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.id"></el-option>
         </el-select>
-        <el-select v-model="selectedCategory" style="margin-top: 10px; width: 100%" placeholder="请选择你要调货货物类型" @change="updateStep(2)">
+        <el-select v-model="selectedCategory" style="margin-top: 10px; width: 100%" placeholder="请选择你要调货货物类型" @change="updateStep(2); disableGoodsSelect = true" :disabled="disableCategorySelect">
           <el-option v-for="category in categories" :key="category" :label="category" :value="category"></el-option>
         </el-select>
-        <el-select v-model="selectedGoods" style="margin-top: 10px; width: 100%" placeholder="请选择你要调货货物名称" @change="updateStep(2)" :disabled="disableGoodsSelect">
+        <el-select v-model="selectedGoods" style="margin-top: 10px; width: 100%" placeholder="请选择你要调货货物名称" @change="updateStep(2); disableCategorySelect = true" :disabled="disableGoodsSelect">
           <el-option v-for="goods in goodsList" :key="goods.id" :label="goods.name" :value="goods.name"></el-option>
         </el-select>
         <el-input v-model="quantity" style="margin-top: 10px" placeholder="请输入你要调货货物数量(单位:吨)" @input="updateStep(2)"></el-input>
 
         <div style="margin-top: 10px">选择运输方案</div>
         <el-tabs v-model="transportScheme" type="card" style="margin-top: 10px" @tab-click="updateStep(3)">
-          <el-tab-pane label="最快速" name="fastest"></el-tab-pane>
-          <el-tab-pane label="最经济" name="economic"></el-tab-pane>
-          <el-tab-pane label="蚁群最短路径" name="Ant"></el-tab-pane>
+          <el-tab-pane label="最快速" name="fastest">最快速</el-tab-pane>
+          <el-tab-pane label="最经济" name="economic">最经济</el-tab-pane>
+          <el-tab-pane label="蚁群最短路径" name="Ant">蚁群最短路径</el-tab-pane>
         </el-tabs>
 
         <div style="display: flex; justify-content: center; margin-top: 10px">
@@ -42,11 +42,6 @@
         <div style="margin-top: 20px">模拟调货进度</div>
         <el-progress :percentage="progress"></el-progress>
         <div class="result" v-html="result"></div>
-
-        <div style="display: flex; margin-top: 20px; justify-content: center">
-          <el-button type="success">发送请求</el-button>
-          <el-button type="danger">请求调货</el-button>
-        </div>
       </div>
       <div v-if="activeName === 'second'" class="records">
         <div class="records-text" v-html="result"></div>
@@ -403,7 +398,38 @@ export default {
       this.disableCategorySelect = !!this.selectedGoods;
       if (this.disableCategorySelect) this.selectedCategory = '';
     },
-    simulateDispatch() {},
+    simulateDispatch() {
+      const payload = {
+        targetStationId: this.selectedStation,
+        goodsName: this.selectedGoods ? this.selectedGoods : this.selectedCategory,
+        quantity: parseInt(this.quantity),
+      };
+
+      const queryString = new URLSearchParams(payload).toString();
+
+      this.progress = 0;
+      this.result = '模拟进行中...';
+      this.$request.post(`/dispatch/simulate?${queryString}`).then((res) => {
+        if (res.code === '200') {
+          const [dispatchResult, operations] = res.data;
+          this.progress = 100;
+          this.result = `
+      <p>调货日志:</p>
+      <ul>${dispatchResult.logs.map(log => `<li>${log}</li>`).join('')}</ul>
+      <p>总共调取: ${dispatchResult.totalDispatched} 吨货物</p>
+    `;
+          // 将操作记录保存，以备管理员审批
+          this.$store.commit('setOperations', operations);
+        } else {
+          this.$message.error(res.msg);
+          this.result = '模拟失败，请重试';
+        }
+      }).catch((error) => {
+        console.error(error);
+        this.$message.error('模拟失败，请重试');
+        this.result = '模拟失败，请重试';
+      });
+    },
     resetFields() {
       this.selectedStation = '';
       this.selectedCategory = '';
@@ -412,6 +438,8 @@ export default {
       this.disableGoodsSelect = false;
       this.disableCategorySelect = false;
       this.activeStep = 0;
+      this.progress = 0;
+      this.result = '';
     },
     handleSurfaceClick(tab) {
       this.activeName = tab.name;
@@ -419,12 +447,29 @@ export default {
     updateStep(step) {
       if (step === 1 && this.selectedStation) {
         this.activeStep = 1;
-      } else if (step === 2 && this.selectedCategory && this.selectedGoods && this.quantity) {
+      } else if (step === 2 && (this.selectedCategory || this.selectedGoods) && this.quantity) {
         this.activeStep = 2;
       } else if (step === 3 && this.transportScheme) {
         this.activeStep = 3;
       }
-    }
+    },
+    formatResult(data) {
+      let resultHtml = '<h4>调货结果</h4>';
+      resultHtml += `<p>总共调货: ${data.totalDispatched} 吨</p>`;
+      resultHtml += '<h5>详细记录:</h5>';
+      resultHtml += '<ul>';
+      data.logs.forEach((log) => {
+        resultHtml += `<li>${log}</li>`;
+      });
+      resultHtml += '</ul>';
+      return resultHtml;
+    },
+    submitRequest() {
+      this.$message.success('请求已发送');
+    },
+    requestDispatch() {
+      this.$message.success('调货请求已发送');
+    },
   },
 };
 </script>

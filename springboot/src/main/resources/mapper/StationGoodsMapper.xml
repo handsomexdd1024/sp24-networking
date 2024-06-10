@@ -5,37 +5,39 @@
 <mapper namespace="com.example.mapper.StationGoodsMapper">
 
     <sql id="Base_Column_List">
-        id, station_id, goods_id, quantity
+        sg.id, sg.station_id, sg.goods_id, sg.quantity, g.name as name, g.category as category
     </sql>
 
     <select id="selectAll" resultType="com.example.entity.StationGoods">
         select
         <include refid="Base_Column_List" />
-        from station_goods
+        from station_goods sg
+        left join goods g on sg.goods_id = g.id
     </select>
 
     <select id="selectById" resultType="com.example.entity.StationGoods">
         select
         <include refid="Base_Column_List" />
-        from station_goods
-        where id = #{id}
+        from station_goods sg
+        left join goods g on sg.goods_id = g.id
+        where sg.id = #{id}
     </select>
 
     <select id="selectByStationId" resultType="com.example.entity.StationGoods">
         select
         <include refid="Base_Column_List" />
-        from station_goods
-        where station_id = #{stationId}
+        from station_goods sg
+        left join goods g on sg.goods_id = g.id
+        where sg.station_id = #{stationId}
     </select>
 
     <select id="selectByGoodsId" resultType="com.example.entity.StationGoods">
         select
         <include refid="Base_Column_List" />
-        from station_goods
-        where goods_id = #{goodsId}
+        from station_goods sg
+        left join goods g on sg.goods_id = g.id
+        where sg.goods_id = #{goodsId}
     </select>
-    
-
 
     <delete id="deleteById">
         delete from station_goods
@@ -73,3 +75,4 @@
     </update>
 
 </mapper>
+

@@ -11,7 +11,7 @@ const request = axios.create({
 // 可以自请求发送前对请求做一些处理
 // 比如统一加token，对请求参数统一加密
 request.interceptors.request.use(config => {
-    config.headers['Content-Type'] = 'application/json;charset=utf-8';        // 设置请求头格式
+    config.headers['Content-Type'] = 'application/json;charset=utf-8'; // 确保设置了 Content-Type
     let user = JSON.parse(localStorage.getItem("xm-user") || '{}')  // 获取缓存的用户信息
     config.headers['token'] = user.token  // 设置请求头
     return config

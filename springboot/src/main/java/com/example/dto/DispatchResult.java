@@ -8,6 +8,14 @@ public class DispatchResult {
     private List<String> logs = new ArrayList<>();
     private int totalDispatched;
 
+    @Override
+    public String toString() {
+        return "DispatchResult{" +
+                "logs=" + logs +
+                ", totalDispatched=" + totalDispatched +
+                '}';
+    }
+
     public void addLog(String log) {
         logs.add(log);
     }

@@ -28,4 +28,13 @@ public class PathNode {
     public void setPrevious(PathNode previous) {
         this.previous = previous;
     }
+
+    @Override
+    public String toString() {
+        return "PathNode{" +
+                "stationId=" + stationId +
+                ", totalTime=" + totalTime +
+                ", previous=" + previous +
+                '}';
+    }
 }
