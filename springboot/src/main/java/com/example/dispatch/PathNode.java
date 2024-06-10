@@ -4,6 +4,19 @@ public class PathNode {
     private int stationId;
     private double totalTime;
     private PathNode previous;
+    private String routeType; // 添加路径类型字段
+    private int dispatchedQuantity;
+
+    public PathNode() {}
+
+    public PathNode(int stationId, double totalTime, PathNode previous, String routeType, int dispatchedQuantity) {
+        this.stationId = stationId;
+        this.totalTime = totalTime;
+        this.previous = previous;
+        this.routeType = routeType;
+        this.dispatchedQuantity = dispatchedQuantity;
+    }
+
 
     public int getStationId() {
         return stationId;
@@ -27,6 +40,22 @@ public class PathNode {
 
     public void setPrevious(PathNode previous) {
         this.previous = previous;
+    }
+
+    public String getRouteType() {
+        return routeType;
+    }
+
+    public void setRouteType(String routeType) {
+        this.routeType = routeType;
+    }
+
+    public int getDispatchedQuantity() {
+        return dispatchedQuantity;
+    }
+
+    public void setDispatchedQuantity(int dispatchedQuantity) {
+        this.dispatchedQuantity = dispatchedQuantity;
     }
 
     @Override

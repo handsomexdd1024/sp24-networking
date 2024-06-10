@@ -1,5 +1,7 @@
 package com.example.dto;
 
+import com.example.dispatch.PathNode;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +12,8 @@ public class DispatchResult {
 
     private double maxTime; // 添加最大时间字段
     private double totalCost; // 添加总成本字段
+
+    private List<PathNode> usedPaths = new ArrayList<>(); // 添加实际使用的路径记录
 
     @Override
     public String toString() {
@@ -53,5 +57,17 @@ public class DispatchResult {
 
     public void setTotalCost(double totalCost) {
         this.totalCost = totalCost;
+    }
+
+    public void addUsedPath(PathNode path) {
+        usedPaths.add(path);
+    }
+
+    public List<PathNode> getUsedPaths() {
+        return usedPaths;
+    }
+
+    public void setUsedPaths(List<PathNode> usedPaths) {
+        this.usedPaths = usedPaths;
     }
 }
