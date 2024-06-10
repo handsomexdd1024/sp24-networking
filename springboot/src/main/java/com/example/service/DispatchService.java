@@ -3,10 +3,12 @@ package com.example.service;
 import com.example.entity.Route;
 import com.example.entity.Station;
 import com.example.entity.StationGoods;
+import com.example.entity.Goods;
 import com.example.dto.DispatchResult;
 import com.example.mapper.StationGoodsMapper;
 import com.example.mapper.StationMapper;
 import com.example.mapper.RouteMapper;
+import com.example.mapper.GoodsMapper;
 import com.example.common.Constants;
 
 import com.example.dispatch.PathNode;
@@ -22,14 +24,14 @@ import java.util.stream.Collectors;
 @Service
 public class DispatchService {
 
-
-
     @Resource
     private StationMapper stationMapper;
     @Resource
     private RouteMapper routeMapper;
     @Resource
     private StationGoodsMapper stationGoodsMapper;
+    @Resource
+    private GoodsMapper goodsMapper;
 
     private Map<Integer, Station> stationsMap;
     private Map<Integer, List<Route>> adjacencyList;
@@ -52,42 +54,26 @@ public class DispatchService {
         stationGoodsList = stationGoodsMapper.selectAll();
     }
 
-
     public DispatchResult simulateDispatch(int targetStationId, String goodsName, int quantity) {
         DispatchResult result = new DispatchResult();
         List<PathNode> initialPaths = findFastestPaths(targetStationId);
 
-        // 打印站点货物数据
-        System.out.println("Station goods list: " + stationGoodsList);
-
-        System.out.println("Initial paths: " + initialPaths);
-        System.out.println("Initial name: " + goodsName);
         int remainingQuantity = dispatchFromPaths(initialPaths, targetStationId, goodsName, quantity, result);
-        System.out.println("Remaining quantity after dispatchFromPaths: " + remainingQuantity);
-        System.out.println("DispatchResult after dispatchFromPaths: " + result);
 
         if (remainingQuantity > 0) {
             remainingQuantity = dispatchViaTransfer(targetStationId, goodsName, remainingQuantity, result);
-            System.out.println("Remaining quantity after dispatchViaTransfer: " + remainingQuantity);
-            System.out.println("DispatchResult after dispatchViaTransfer: " + result);
         }
 
         result.setTotalDispatched(quantity - remainingQuantity);
-        System.out.println("Final DispatchResult: " + result);
 
         return result;
     }
-
-
-
 
     private int dispatchFromPaths(List<PathNode> paths, int targetStationId, String goodsName, int quantity, DispatchResult result) {
         int remainingQuantity = quantity;
         for (PathNode path : paths) {
             int stationId = path.getStationId();
-            System.out.println("Checking station: " + stationId);
             List<StationGoods> goodsList = getGoodsAtStation(stationId, goodsName);
-            System.out.println("GOD station: " + goodsList);
             for (StationGoods goods : goodsList) {
                 if (remainingQuantity <= 0) break;
 
@@ -107,18 +93,13 @@ public class DispatchService {
         return remainingQuantity;
     }
 
-
-
     private int dispatchViaTransfer(int targetStationId, String goodsName, int remainingQuantity, DispatchResult result) {
         List<PathNode> initialPaths = findFastestPaths(targetStationId);
-        System.out.println("Initial paths for transfer: " + initialPaths);
 
         for (PathNode path : initialPaths) {
             if (remainingQuantity <= 0) break;
             int transferStationId = path.getStationId();
-            System.out.println("Checking transfer station: " + transferStationId);
             List<PathNode> transferPaths = findFastestPaths(transferStationId);
-            System.out.println("Transfer paths from station " + transferStationId + ": " + transferPaths);
 
             remainingQuantity = dispatchFromPaths(transferPaths, transferStationId, goodsName, remainingQuantity, result);
 
@@ -130,7 +111,6 @@ public class DispatchService {
         return remainingQuantity;
     }
 
-
     private List<StationGoods> getGoodsAtStation(int stationId, String goodsName) {
         List<StationGoods> filteredGoods = stationGoodsList.stream()
                 .filter(g -> {
@@ -138,40 +118,44 @@ public class DispatchService {
                     boolean nameMatch = goodsName.equals(Optional.ofNullable(g.getName()).orElse(""));
                     boolean categoryMatch = goodsName.equals(Optional.ofNullable(g.getCategory()).orElse(""));
 
-
-
                     return stationMatch && (nameMatch || categoryMatch);
                 })
                 .sorted(Comparator.comparing(StationGoods::getId).reversed())
                 .collect(Collectors.toList());
 
-        System.out.println("Filtered goods at station " + stationId + " for goodsName " + goodsName + ": " + filteredGoods);
         return filteredGoods;
     }
 
-
-
     @Transactional
-    public void updateGoodsQuantity(StationGoods goods, int quantity) {
+    public void updateGoodsQuantity(StationGoods stationGoods, int quantity) {
         if (operations == null) {
             operations = new ArrayList<>();
         }
 
-        goods.setQuantity(goods.getQuantity() - quantity);
-        if (goods.getQuantity() <= 0) {
-            stationGoodsMapper.deleteById(goods.getId());
-            operations.add(new Operation("deleteGoods", goods));
+        // 更新 StationGoods 表
+        stationGoods.setQuantity(stationGoods.getQuantity() - quantity);
+        if (stationGoods.getQuantity() <= 0) {
+            stationGoodsMapper.deleteById(stationGoods.getId());
+            operations.add(new Operation("deleteGoods", stationGoods));
         } else {
-            stationGoodsMapper.updateById(goods);
-            operations.add(new Operation("updateGoods", goods));
+            stationGoodsMapper.updateById(stationGoods);
+            operations.add(new Operation("updateGoods", stationGoods));
         }
 
-        Station station = stationsMap.get(goods.getStationId());
-        station.setStorage(station.getStorage() - quantity);
+        // 更新 Station 表
+        Station station = stationsMap.get(stationGoods.getStationId());
+        station.setStorage(station.getStorage() + quantity); // 增加仓库空余量
         stationMapper.updateById(station);
+
+        // 更新 Goods 表
+        Goods goods = goodsMapper.selectById(stationGoods.getGoodsId());
+        goods.setQuantity(goods.getQuantity() - quantity);
+        if (goods.getQuantity() <= 0) {
+            goodsMapper.deleteById(goods.getId());
+        } else {
+            goodsMapper.updateById(goods);
+        }
     }
-
-
 
     public List<Operation> getOperations() {
         return operations;
