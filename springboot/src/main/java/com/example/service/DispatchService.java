@@ -66,6 +66,18 @@ public class DispatchService {
 
         result.setTotalDispatched(quantity - remainingQuantity);
 
+        // 计算最长时间和总成本
+        double maxTime = 0;
+        double totalCost = 0;
+        for (PathNode path : initialPaths) {
+            if (path.getTotalTime() > maxTime) {
+                maxTime = path.getTotalTime();
+            }
+            totalCost += calculatePathCost(path);
+        }
+        result.setMaxTime(maxTime);
+        result.setTotalCost(totalCost);
+
         return result;
     }
 
@@ -79,12 +91,12 @@ public class DispatchService {
 
                 int availableQuantity = goods.getQuantity();
                 if (availableQuantity >= remainingQuantity) {
-                    result.addLog("从站点 " + stationId + " 调度 " + remainingQuantity + " 吨货物到站点 " + targetStationId);
+                    result.addLog(generateLogMessage(path, stationId, targetStationId, remainingQuantity));
                     updateGoodsQuantity(goods, remainingQuantity);
                     remainingQuantity = 0;
                     break;
                 } else {
-                    result.addLog("从站点 " + stationId + " 调度 " + availableQuantity + " 吨货物到站点 " + targetStationId);
+                    result.addLog(generateLogMessage(path, stationId, targetStationId, availableQuantity));
                     updateGoodsQuantity(goods, availableQuantity);
                     remainingQuantity -= availableQuantity;
                 }
@@ -149,11 +161,13 @@ public class DispatchService {
 
         // 更新 Goods 表
         Goods goods = goodsMapper.selectById(stationGoods.getGoodsId());
-        goods.setQuantity(goods.getQuantity() - quantity);
-        if (goods.getQuantity() <= 0) {
-            goodsMapper.deleteById(goods.getId());
-        } else {
-            goodsMapper.updateById(goods);
+        if (goods != null) {
+            goods.setQuantity(goods.getQuantity() - quantity);
+            if (goods.getQuantity() <= 0) {
+                goodsMapper.deleteById(goods.getId());
+            } else {
+                goodsMapper.updateById(goods);
+            }
         }
     }
 
@@ -223,5 +237,68 @@ public class DispatchService {
             default:
                 throw new IllegalArgumentException("Unknown route type: " + routeType);
         }
+    }
+
+    private double calculatePathCost(PathNode path) {
+        double totalCost = 0;
+        PathNode current = path;
+        while (current.getPrevious() != null) {
+            Station fromStation = stationsMap.get(current.getPrevious().getStationId());
+            Station toStation = stationsMap.get(current.getStationId());
+            double distance = calculateDistance(fromStation, toStation);
+            Route route = getRoute(current.getPrevious().getStationId(), current.getStationId());
+
+            if (route != null) {
+                double costPerTonPerKm = getCost(route.getRouteType());
+                totalCost += distance * costPerTonPerKm;
+            }
+            current = current.getPrevious();
+        }
+        return totalCost;
+    }
+
+    private Route getRoute(int fromStationId, int toStationId) {
+        return adjacencyList.getOrDefault(toStationId, Collections.emptyList()).stream()
+                .filter(route -> route.getFromStationId() == fromStationId)
+                .findFirst()
+                .orElse(null);
+    }
+
+
+    private double getCost(String routeType) {
+        switch (routeType) {
+            case "flight":
+                return Constants.FLIGHT_COST;
+            case "rail":
+                return Constants.RAIL_COST;
+            case "road":
+                return Constants.ROAD_COST;
+            default:
+                throw new IllegalArgumentException("Unknown route type: " + routeType);
+        }
+    }
+
+    private String generateLogMessage(PathNode path, int fromStationId, int toStationId, int quantity) {
+        StringBuilder logMessage = new StringBuilder();
+        logMessage.append("从站点 ").append(stationsMap.get(fromStationId).getName())
+                .append(" 调度 ").append(quantity).append(" 吨货物到站点 ").append(stationsMap.get(toStationId).getName());
+
+        // 添加路径信息
+        PathNode current = path;
+        List<String> routeDescriptions = new ArrayList<>();
+        while (current.getPrevious() != null) {
+            Route route = getRoute(current.getPrevious().getStationId(), current.getStationId());
+            if (route != null) {
+                routeDescriptions.add("经过 " + stationsMap.get(current.getPrevious().getStationId()).getName() + " > " +
+                        stationsMap.get(current.getStationId()).getName() + " 的 " + route.getRouteType() + " 路线");
+            }
+            current = current.getPrevious();
+        }
+
+        if (!routeDescriptions.isEmpty()) {
+            logMessage.append(" (").append(String.join(", ", routeDescriptions)).append(")");
+        }
+
+        return logMessage.toString();
     }
 }
