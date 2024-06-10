@@ -417,14 +417,15 @@ export default {
           console.log("Dispatch Result:", dispatchResult); // 添加调试信息
           console.log("Operations:", operations); // 添加调试信息
 
-          this.progress = 100;
+          this.progress = (dispatchResult.totalDispatched / payload.quantity) * 100;
           this.result = `
-        <p>调货日志:</p>
-        <ul>${dispatchResult.logs.map(log => `<li>${log}</li>`).join('')}</ul>
-        <p>总共调取: ${dispatchResult.totalDispatched} 吨货物</p>
-      `;
-          // 将操作记录保存，以备管理员审批
-          // this.$store.commit('setOperations', operations);
+            <p>调货日志:</p>
+            <ul>${dispatchResult.logs.map(log => `<li>${log}</li>`).join('')}</ul>
+            <p>总共调取: ${dispatchResult.totalDispatched} 吨货物</p>
+            <p>总需求量: ${payload.quantity} 吨货物</p>
+            <p>最长时间: ${dispatchResult.maxTime.toFixed(2)} 小时</p>
+            <p>总成本: ${dispatchResult.totalCost.toFixed(2)} 元</p>
+          `;
         } else {
           this.$message.error(res.msg); // 修改此处为res.msg而不是res.data.msg
           this.result = '模拟失败，请重试';
