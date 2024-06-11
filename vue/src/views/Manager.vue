@@ -52,7 +52,7 @@
             <template slot="title">
               <i class="el-icon-menu"></i><span>用户管理</span>
             </template>
-            <el-menu-item index="/supervisor">主管信息</el-menu-item>
+            <el-menu-item index="/supervisor" v-if="user.role ==='SUPERVISOR'">主管信息</el-menu-item>
             <el-menu-item index="/admin">管理员信息</el-menu-item>
             <el-menu-item index="/user">用户信息</el-menu-item>
           </el-submenu>

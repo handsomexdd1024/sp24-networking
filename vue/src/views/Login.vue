@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div style="width: 400px; padding: 30px; background-color: white; border-radius: 5px;">
+    <div style="width: 400px; padding: 30px; background-color: white; border-radius: 10px; border: #f0f0f0 2px solid">
       <div style="text-align: center; font-size: 20px; margin-bottom: 20px; color: #333">欢迎使用</div>
       <el-form :model="form" :rules="rules" ref="formRef">
         <el-form-item prop="username">
@@ -11,8 +11,9 @@
         </el-form-item>
         <el-form-item>
           <el-select v-model="form.role" placeholder="请选择角色" style="width: 100%">
-            <el-option label="管理员" value="ADMIN"></el-option>
             <el-option label="用户" value="USER"></el-option>
+            <el-option label="管理员" value="ADMIN"></el-option>
+            <el-option label="主管" value="SUPERVISOR"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -57,10 +58,10 @@ export default {
             if (res.code === '200') {
               localStorage.setItem("xm-user", JSON.stringify(res.data))  // 存储用户数据
               // this.$router.push('/')  // 跳转主页
-              if (res.data.role === 'ADMIN') {
-                location.href = '/home'
-              } else {
+              if (res.data.role === 'USER' ) {
                 location.href = '/front/home'
+              } else {
+                location.href = '/home'
               }
               this.$message.success('登录成功')
             } else {

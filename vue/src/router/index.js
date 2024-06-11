@@ -50,7 +50,7 @@ const router = new VueRouter({
 })
 
 //禁止USER前往的后端
-const restrictedPaths = ['/home', '/admin', '/user', '/notice','/station']; // 根据需要添加更多路径
+const restrictedPaths = ['/home', '/admin', '/user','/supervisor', '/notice','/station','/route','/goods']; // 根据需要添加更多路径
 
 // 路由守卫
 router.beforeEach((to ,from, next) => {
