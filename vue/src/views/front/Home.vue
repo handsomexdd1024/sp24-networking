@@ -52,6 +52,28 @@
     </div>
 
     <div id="china-map" style="width: 100%; height: 600px;"></div>
+
+    <!-- 新增的站点货物信息块 -->
+    <el-dialog :visible.sync="goodsDialogVisible" title="站点货物信息" width="500px">
+      <div>
+        <h4>{{ selectedStationName }}</h4>
+        <el-table :data="stationGoods" style="width: 100%; max-height: 400px; overflow-y: auto;">
+          <el-table-column prop="name" label="货物名称"></el-table-column>
+          <el-table-column prop="category" label="货物类别"></el-table-column>
+          <el-table-column prop="quantity" label="货物量"></el-table-column>
+        </el-table>
+      </div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="goodsDialogVisible = false">关闭</el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog :visible.sync="graphDialogVisible" title="蚁群算法生成的图" width="500px">
+      <div id="graph-container" style="width: 100%; height: 400px;"></div>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="graphDialogVisible = false">关闭</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -82,6 +104,11 @@ export default {
       activeStep: 0,
       myChart: null,
       originalOption: null,
+      goodsDialogVisible: false,  // 新增
+      selectedStationName: '',  // 新增
+      stationGoods: [],  // 新增
+      graphDialogVisible: false,  // 新增
+      graphData: null,  // 新增
     };
   },
   mounted() {
@@ -375,6 +402,17 @@ export default {
             };
 
             this.myChart.setOption(this.originalOption);
+
+            // 添加点击事件监听器
+            this.myChart.on('click', (params) => {
+              if (params.componentType === 'series' && params.seriesType === 'scatter') {
+                const stationName = params.data.name;
+                const station = this.stations.find(station => station.name === stationName);
+                if (station) {
+                  this.fetchStationGoods(station.id, station.name);
+                }
+              }
+            });
           });
     },
     disableGoods() {
@@ -536,8 +574,9 @@ export default {
 
       const highlightedLinks = paths.map((path) => {
         return {
-          fromName: this.stations.find((station) => station.id === path.from).name,
-          toName: this.stations.find((station) => station.id === path.to).name,
+          fromName: this.stations.find((station) => station.id === path.to).name,
+          // this.stations.find((station) => station.id === path.from).name,
+          toName: this.stations.find((station) => station.id === path.from).name,
           coords: [geoCoordMap[path.from], geoCoordMap[path.to]],
           routeType: path.routeType,
         };
@@ -593,6 +632,17 @@ export default {
       };
 
       this.myChart.setOption(option);
+    },
+    fetchStationGoods(stationId, stationName) {
+      this.$request.get(`/station-goods/selectByStationId/${stationId}`).then((res) => {
+        if (res.code === '200') {
+          this.stationGoods = res.data;
+          this.selectedStationName = stationName;
+          this.goodsDialogVisible = true;
+        } else {
+          this.$message.error(res.msg);
+        }
+      });
     },
   },
 };
