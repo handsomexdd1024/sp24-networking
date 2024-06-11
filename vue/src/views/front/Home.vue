@@ -1,7 +1,6 @@
 <template>
   <div class="main-content">
     <div class="control-panel" v-if="user.role === 'USER'">
-      <!-- 用户交互的内容可以放在这里 -->
       <h3 style="text-align: center">用户面板</h3>
       <el-tabs v-model="activeName" @tab-click="handleSurfaceClick">
         <el-tab-pane label="模拟调货" name="first"></el-tab-pane>
@@ -49,7 +48,6 @@
     </div>
 
     <div class="control-panel" v-if="user.role === 'ADMIN'">
-      <!-- 管理员交互的内容可以放在这里 -->
       <h3 style="text-align: center">管理员面板</h3>
     </div>
 
@@ -82,6 +80,8 @@ export default {
       antResult: '',
       activeName: 'first',
       activeStep: 0,
+      myChart: null,
+      originalOption: null,
     };
   },
   mounted() {
@@ -89,7 +89,6 @@ export default {
   },
   methods: {
     fetchData() {
-      // 获取站点数据
       this.$request.get('/station/selectAll').then((res) => {
         if (res.code === '200') {
           this.stations = res.data;
@@ -99,7 +98,6 @@ export default {
         }
       });
 
-      // 获取路径数据
       this.$request.get('/route/selectAll').then((res) => {
         if (res.code === '200') {
           this.routes = res.data;
@@ -109,7 +107,6 @@ export default {
         }
       });
 
-      // 获取货物类型和名称数据
       this.$request.get('/goods/categories').then((res) => {
         if (res.code === '200') {
           this.categories = res.data;
@@ -133,14 +130,14 @@ export default {
     },
     initChart() {
       var chartDom = document.getElementById('china-map');
-      var myChart = echarts.init(chartDom);
+      this.myChart = echarts.init(chartDom);
 
-      myChart.showLoading();
+      this.myChart.showLoading();
       fetch('https://geo.datav.aliyun.com/areas/bound/100000_full.json')
           .then((response) => response.json())
           .then((chinaJson) => {
             echarts.registerMap('china', chinaJson);
-            myChart.hideLoading();
+            this.myChart.hideLoading();
 
             const geoCoordMap = {};
             const data = this.stations.map((station) => {
@@ -171,15 +168,9 @@ export default {
               return res;
             };
 
-            const flightLinks = createLinkData(
-                this.routes.filter((route) => route.routeType === 'flight')
-            );
-            const roadLinks = createLinkData(
-                this.routes.filter((route) => route.routeType === 'road')
-            );
-            const railLinks = createLinkData(
-                this.routes.filter((route) => route.routeType === 'rail')
-            );
+            const flightLinks = createLinkData(this.routes.filter((route) => route.routeType === 'flight'));
+            const roadLinks = createLinkData(this.routes.filter((route) => route.routeType === 'road'));
+            const railLinks = createLinkData(this.routes.filter((route) => route.routeType === 'rail'));
 
             const trainPath =
                 'path://M1705.1,317.7c-90.6,0-164.1-73.5-164.1-164.1S1614.5-10.5,1705.1-10.5S1869.2,63,1869.2,153.6S1795.7,317.7,1705.1,317.7z M1705.1,96.4c-31.6,0-57.3,25.7-57.3,57.3s25.7,57.3,57.3,57.3s57.3-25.7,57.3-57.3S1736.7,96.4,1705.1,96.4z';
@@ -187,10 +178,7 @@ export default {
                 'path://M1317.6,616.5H410.2c-27.8,0-50.4-22.6-50.4-50.4v-406c0-27.8,22.6-50.4,50.4-50.4h907.3c27.8,0,50.4,22.6,50.4,50.4v406C1368,593.9,1345.4,616.5,1317.6,616.5z M1091.6,616.5h-574c-27.8,0-50.4,22.6-50.4,50.4v70.2c0,27.8,22.6,50.4,50.4,50.4h574c27.8,0,50.4-22.6,50.4-50.4v-70.2C1142,639.1,1119.4,616.5,1091.6,616.5z M492.5,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S437,566.1,492.5,566.1zM1091.6,566.1c55.5,0,100.4-44.9,100.4-100.4s-44.9-100.4-100.4-100.4s-100.4,44.9-100.4,100.4S1036.1,566.1,1091.6,566.1z';
 
             const offsetCoords = (coords, offset) => {
-              const theta = Math.atan2(
-                  coords[1][1] - coords[0][1],
-                  coords[1][0] - coords[0][0]
-              );
+              const theta = Math.atan2(coords[1][1] - coords[0][1], coords[1][0] - coords[0][0]);
               const dx = offset * Math.sin(theta);
               const dy = offset * Math.cos(theta);
               return [
@@ -199,7 +187,7 @@ export default {
               ];
             };
 
-            const option = {
+            this.originalOption = {
               title: {
                 text: '中国地图',
                 left: 'center',
@@ -215,11 +203,7 @@ export default {
                   } else if (params.seriesType === 'lines') {
                     const link = params.data;
                     const routeType =
-                        link.routeType === 'flight'
-                            ? '航空'
-                            : link.routeType === 'road'
-                                ? '公路'
-                                : '铁路';
+                        link.routeType === 'flight' ? '航空' : link.routeType === 'road' ? '公路' : '铁路';
                     return `路径: ${link.fromName} > ${link.toName}<br/>类型: ${routeType}<br/>可用性: ${
                         link.disableFlag === '0' ? '可用' : '不可用'
                     }`;
@@ -390,7 +374,7 @@ export default {
               ],
             };
 
-            myChart.setOption(option);
+            this.myChart.setOption(this.originalOption);
           });
     },
     disableGoods() {
@@ -421,24 +405,30 @@ export default {
       }
 
       this.$request.post(`${apiEndpoint}?${queryString}`).then((res) => {
-        console.log("Response from backend:", res); // 添加调试信息
+        console.log('Response from backend:', res);
 
         if (res.code === '200') {
-          const [dispatchResult, operations] = res.data;  // 确保这里的数据结构正确
-          console.log("Dispatch Result:", dispatchResult); // 添加调试信息
-          console.log("Operations:", operations); // 添加调试信息
+          const [dispatchResult, operations] = res.data;
+          console.log('Dispatch Result:', dispatchResult);
+          console.log('Operations:', operations);
 
           this.progress = (dispatchResult.totalDispatched / payload.quantity) * 100;
-          this.result = `
-                    <p>调货日志:</p>
-                    <ul>${dispatchResult.logs.map(log => `<li>${log}</li>`).join('')}</ul>
-                    <p>总共调取: ${dispatchResult.totalDispatched} 吨货物</p>
-                    <p>总需求量: ${payload.quantity} 吨货物</p>
-                    <p>最长时间: ${dispatchResult.maxTime.toFixed(2)} 小时</p>
-                    <p>总成本: ${dispatchResult.totalCost.toFixed(2)} 元</p>
-                `;
+          let resultHtml = `<p>调货日志:</p><ul>${dispatchResult.logs
+              .map((log) => `<li>${log}</li>`)
+              .join('')}</ul><p>总共调取: ${dispatchResult.totalDispatched} 吨货物</p><p>总需求量: ${payload.quantity} 吨货物</p>`;
+
+          if (this.transportScheme !== 'Ant') {
+            resultHtml += `<p>最长时间: ${dispatchResult.maxTime.toFixed(2)} 小时</p><p>总成本: ${dispatchResult.totalCost.toFixed(2)} 元</p>`;
+          }
+
+          this.result = resultHtml;
+
+          if (dispatchResult.usedPaths && dispatchResult.usedPaths.length > 0) {
+            const paths = this.extractPaths(dispatchResult.usedPaths);
+            this.highlightPaths(paths);
+          }
         } else {
-          this.$message.error(res.msg); // 修改此处为res.msg而不是res.data.msg
+          this.$message.error(res.msg);
           this.result = '模拟失败，请重试';
         }
       }).catch((error) => {
@@ -457,6 +447,9 @@ export default {
       this.activeStep = 0;
       this.progress = 0;
       this.result = '';
+      if (this.myChart) {
+        this.myChart.setOption(this.originalOption);
+      }
     },
     handleSurfaceClick(tab) {
       this.activeName = tab.name;
@@ -488,7 +481,7 @@ export default {
       this.$message.success('调货请求已发送');
     },
     testAntColony() {
-      const selectedStation = this.stations.find(station => station.id === this.selectedAntCity);
+      const selectedStation = this.stations.find((station) => station.id === this.selectedAntCity);
       if (!selectedStation) {
         this.$message.error('请选择有效的城市');
         return;
@@ -503,16 +496,13 @@ export default {
       this.antResult = '蚁群算法计算中...';
 
       this.$request.post(`/dispatch/findShortestPathUsingAntColony?${queryString}`).then((res) => {
-        console.log("Response from backend:", res); // 添加调试信息
+        console.log('Response from backend:', res);
 
         if (res.code === '200') {
-          const path = res.data; // 假设这里返回的是节点数组
-          console.log("Ant Colony Path:", path); // 添加调试信息
+          const path = res.data;
+          console.log('Ant Colony Path:', path);
 
-          this.antResult = `
-            <p>蚁群算法最短路径:</p>
-            <ul>${path.map(node => `<li>${node.name}</li>`).join('')}</ul>
-          `;
+          this.antResult = `<p>蚁群算法最短路径:</p><ul>${path.map((node) => `<li>${node.name}</li>`).join('')}</ul>`;
         } else {
           this.$message.error(res.msg);
           this.antResult = '蚁群算法计算失败，请重试';
@@ -522,6 +512,73 @@ export default {
         this.$message.error('蚁群算法计算失败，请重试');
         this.antResult = '蚁群算法计算失败，请重试';
       });
+    },
+    extractPaths(usedPaths) {
+      const paths = [];
+      let currentNode = usedPaths[0];
+      while (currentNode && currentNode.previous) {
+        paths.push({
+          from: currentNode.previous.stationId,
+          to: currentNode.stationId,
+          routeType: currentNode.routeType,
+        });
+        currentNode = currentNode.previous;
+      }
+      return paths;
+    },
+    highlightPaths(paths) {
+      if (!this.myChart) return;
+
+      const geoCoordMap = {};
+      this.stations.forEach((station) => {
+        geoCoordMap[station.id] = [station.longitude, station.latitude];
+      });
+
+      const highlightedLinks = paths.map((path) => {
+        return {
+          fromName: this.stations.find((station) => station.id === path.from).name,
+          toName: this.stations.find((station) => station.id === path.to).name,
+          coords: [geoCoordMap[path.from], geoCoordMap[path.to]],
+          routeType: path.routeType,
+        };
+      });
+
+      const option = {
+        series: this.originalOption.series.map((series) => {
+          if (series.type === 'lines') {
+            return {
+              ...series,
+              data: series.data.map((link) => {
+                const highlightedLink = highlightedLinks.find(
+                    (hl) =>
+                        (hl.fromName === link.fromName && hl.toName === link.toName) ||
+                        (hl.fromName === link.toName && hl.toName === link.fromName)
+                );
+                if (highlightedLink) {
+                  return {
+                    ...link,
+                    lineStyle: {
+                      ...link.lineStyle,
+                      color: 'purple',
+                      opacity: 1,
+                    },
+                  };
+                }
+                return {
+                  ...link,
+                  lineStyle: {
+                    ...link.lineStyle,
+                    opacity: 0.1,
+                  },
+                };
+              }),
+            };
+          }
+          return series;
+        }),
+      };
+
+      this.myChart.setOption(option);
     },
   },
 };
