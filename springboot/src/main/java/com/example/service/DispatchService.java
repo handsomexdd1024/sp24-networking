@@ -18,6 +18,7 @@ import com.example.graph.services.BestNode;
 import com.example.graph.Ant.AntColonyOptimization;
 import com.example.graph.graph_base.Graph;
 import com.example.graph.graph_base.Node;
+import com.example.graph.graph_base.Edge;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -363,15 +364,17 @@ public class DispatchService {
     }
 
     public List<Node> findShortestPathUsingAntColony(String startCity) {
-        // 加载图形数据
-        Graph graph = new Graph("springboot/src/main/java/com/example/graph/graph.json");
-        graph.loadGraphFromJson();
+        // 动态生成图形数据
+        Graph graph = generateGraphFromDatabase();
 
         // 找到起始站点对应的节点
         Node targetNode = graph.findNode(startCity);
         if (targetNode == null) {
             throw new IllegalArgumentException("未找到起始城市: " + startCity);
         }
+
+        // 打印生成的点和边信息
+        printGraphData(graph);
 
         // 获取所有节点名称
         List<Node> allNodes = graph.getNodes();
@@ -391,9 +394,91 @@ public class DispatchService {
             throw new IllegalArgumentException("未找到有效路径");
         }
 
-        return Arrays.asList(closestNode,targetNode);
+        return Arrays.asList(targetNode, closestNode);
     }
 
+    private Graph generateGraphFromDatabase() {
+        Graph graph = new Graph();
+
+        // 获取所有站点信息
+        List<Station> stations = stationMapper.selectAll(null);
+        Map<Integer, Node> nodeMap = new HashMap<>();
+        for (Station station : stations) {
+            Node node = new Node(station.getName(), station.getLatitude(), station.getLongitude());
+            graph.addNode(node);
+            nodeMap.put(station.getId(), node);
+        }
+
+        // 获取所有路径信息并计算权值
+        List<Route> routes = routeMapper.selectAll(null);
+
+        // 创建边的集合，确保无重复边
+        Set<Edge> edges = new HashSet<>();
+        for (Route route : routes) {
+            if (route.isEnabled()) {
+                int fromId = Math.min(route.getFromStationId(), route.getToStationId());
+                int toId = Math.max(route.getFromStationId(), route.getToStationId());
+                Node fromNode = nodeMap.get(fromId);
+                Node toNode = nodeMap.get(toId);
+                if (fromNode != null && toNode != null) {
+                    Edge edge = new Edge(fromNode, toNode, calculateAntDistance(fromNode, toNode));
+                    edges.add(edge);
+                }
+            }
+        }
+
+        // 计算所有边的距离
+        List<Double> distances = edges.stream()
+                .map(edge -> edge.weight)
+                .collect(Collectors.toList());
+
+        // 将距离等比缩小为不大于10且精确到小数点后一位的数作为权重
+        double maxDistance = distances.stream().max(Double::compare).orElse(1.0);
+        double scalingFactor = 10.0 / maxDistance;
+
+        for (Edge edge : edges) {
+            double scaledWeight = Math.round(edge.weight * scalingFactor * 10.0) / 10.0;
+            edge.weight = scaledWeight;
+            graph.addEdge(edge.node1, edge.node2, edge.weight);
+        }
+
+        return graph;
+    }
+
+    private double calculateAntDistance(Node node1, Node node2) {
+        double lat1 = node1.latitude;
+        double lon1 = node1.longitude;
+        double lat2 = node2.latitude;
+        double lon2 = node2.longitude;
+        double theta = lon1 - lon2;
+        double dist = Math.sin(deg2rad(lat1)) * Math.sin(deg2rad(lat2)) + Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.cos(deg2rad(theta));
+        dist = Math.acos(dist);
+        dist = rad2deg(dist);
+        dist = dist * 60 * 1.1515 * 1.609344;  // Convert to kilometers
+        return dist;
+    }
+
+    private double deg2rad(double deg) {
+        return (deg * Math.PI / 180.0);
+    }
+
+    private double rad2deg(double rad) {
+        return (rad * 180.0 / Math.PI);
+    }
+
+    private void printGraphData(Graph graph) {
+        System.out.println("Graph Nodes:");
+        for (Node node : graph.getNodes()) {
+            System.out.println(node);
+        }
+
+        System.out.println("Graph Edges:");
+        for (Node node : graph.getNodes()) {
+            for (Edge edge : graph.getEdges(node)) {
+                System.out.println(edge);
+            }
+        }
+    }
 
 
 

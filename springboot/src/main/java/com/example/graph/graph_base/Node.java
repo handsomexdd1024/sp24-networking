@@ -2,8 +2,8 @@ package com.example.graph.graph_base;
 
 public class Node {
     public String name;
-    double latitude;
-    double longitude;
+    public double latitude; // 修改为 public
+    public double longitude; // 修改为 public
 
     public Node(String name, double latitude, double longitude) {
         this.name = name;
