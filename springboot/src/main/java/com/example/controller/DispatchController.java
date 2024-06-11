@@ -19,13 +19,28 @@ public class DispatchController {
     @Resource
     private DispatchService dispatchService;
 
-    @PostMapping("/simulate")
+    @PostMapping("/simulateFastest")
     public Result simulateDispatch(@RequestParam("targetStationId") int targetStationId,
                                    @RequestParam("goodsName") String goodsName,
                                    @RequestParam("quantity") int quantity) {
         try {
             dispatchService.loadData();
             DispatchResult result = dispatchService.simulateDispatch(targetStationId, goodsName, quantity);
+            List<Operation> operations = dispatchService.getOperations();
+            return Result.success(new Object[]{result, operations});
+        } catch (Exception e) {
+            e.printStackTrace(); // 打印详细的错误信息
+            return Result.error();
+        }
+    }
+
+    @PostMapping("/simulateEconomic")
+    public Result simulateEconomicDispatch(@RequestParam("targetStationId") int targetStationId,
+                                           @RequestParam("goodsName") String goodsName,
+                                           @RequestParam("quantity") int quantity) {
+        try {
+            dispatchService.loadData();
+            DispatchResult result = dispatchService.simulateEconomicDispatch(targetStationId, goodsName, quantity);
             List<Operation> operations = dispatchService.getOperations();
             return Result.success(new Object[]{result, operations});
         } catch (Exception e) {

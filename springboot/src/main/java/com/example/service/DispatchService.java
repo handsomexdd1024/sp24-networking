@@ -86,6 +86,33 @@ public class DispatchService {
         return result;
     }
 
+    public DispatchResult simulateEconomicDispatch(int targetStationId, String goodsName, int quantity) {
+        DispatchResult result = new DispatchResult();
+        List<PathNode> initialPaths = findEconomicPaths(targetStationId);
+
+        int remainingQuantity = dispatchFromEconomicPaths(initialPaths, targetStationId, goodsName, quantity, result);
+
+        if (remainingQuantity > 0) {
+            remainingQuantity = dispatchViaEconomicTransfer(targetStationId, goodsName, remainingQuantity, result);
+        }
+
+        result.setTotalDispatched(quantity - remainingQuantity);
+
+        // 计算最长时间和总成本
+        double maxTime = 0;
+        double totalCost = 0;
+        for (PathNode path : result.getUsedPaths()) {
+            if (path.getTotalTime() > maxTime) {
+                maxTime = path.getTotalTime();
+            }
+            totalCost += calculatePathCost(path, result);
+        }
+        result.setMaxTime(maxTime);
+        result.setTotalCost(totalCost);
+
+        return result;
+    }
+
 
 
 
@@ -133,6 +160,37 @@ public class DispatchService {
         return remainingQuantity;
     }
 
+    private int dispatchFromEconomicPaths(List<PathNode> paths, int targetStationId, String goodsName, int quantity, DispatchResult result) {
+        int remainingQuantity = quantity;
+        for (PathNode path : paths) {
+            int stationId = path.getStationId();
+            List<StationGoods> goodsList = getGoodsAtStation(stationId, goodsName);
+            for (StationGoods goods : goodsList) {
+                if (remainingQuantity <= 0) break;
+
+                int availableQuantity = goods.getQuantity();
+                if (availableQuantity > 0) {
+                    result.addUsedPath(path); // 记录使用的路径
+
+                    if (availableQuantity >= remainingQuantity) {
+                        path.setDispatchedQuantity(remainingQuantity); // 设置路径调度量
+                        result.addLog(generateLogMessage(path, stationId, targetStationId, remainingQuantity));
+                        updateGoodsQuantity(goods, remainingQuantity);
+
+                        remainingQuantity = 0;
+                    } else {
+                        path.setDispatchedQuantity(availableQuantity); // 设置路径调度量
+                        result.addLog(generateLogMessage(path, stationId, targetStationId, availableQuantity));
+                        updateGoodsQuantity(goods, availableQuantity);
+
+                        remainingQuantity -= availableQuantity;
+                    }
+                }
+            }
+        }
+        return remainingQuantity;
+    }
+
 
 
 
@@ -149,6 +207,24 @@ public class DispatchService {
             List<PathNode> transferPaths = findFastestPaths(transferStationId);
 
             remainingQuantity = dispatchFromPaths(transferPaths, transferStationId, goodsName, remainingQuantity, result);
+
+            if (remainingQuantity <= 0) {
+                break;
+            }
+        }
+
+        return remainingQuantity;
+    }
+
+    private int dispatchViaEconomicTransfer(int targetStationId, String goodsName, int remainingQuantity, DispatchResult result) {
+        List<PathNode> initialPaths = findEconomicPaths(targetStationId);
+
+        for (PathNode path : initialPaths) {
+            if (remainingQuantity <= 0) break;
+            int transferStationId = path.getStationId();
+            List<PathNode> transferPaths = findEconomicPaths(transferStationId);
+
+            remainingQuantity = dispatchFromEconomicPaths(transferPaths, transferStationId, goodsName, remainingQuantity, result);
 
             if (remainingQuantity <= 0) {
                 break;
@@ -242,6 +318,38 @@ public class DispatchService {
                     System.out.println("Distance: " + distance);
                     System.out.println("Speed: " + getSpeed(route.getRouteType()));
                     System.out.println("Total Time: " + newTotalTime);
+                }
+            }
+        }
+
+        return new ArrayList<>(bestPaths.values());
+    }
+
+    private List<PathNode> findEconomicPaths(int targetStationId) {
+        PriorityQueue<PathNode> queue = new PriorityQueue<>(Comparator.comparingDouble(p -> calculatePathCost(p, null)));
+        Map<Integer, PathNode> bestPaths = new HashMap<>();
+
+        PathNode startNode = new PathNode();
+        startNode.setStationId(targetStationId);
+        startNode.setTotalTime(0);
+        queue.add(startNode);
+        bestPaths.put(targetStationId, startNode);
+
+        while (!queue.isEmpty()) {
+            PathNode current = queue.poll();
+            for (Route route : adjacencyList.getOrDefault(current.getStationId(), Collections.emptyList())) {
+                if (!route.isEnabled()) continue;
+
+                int nextStationId = route.getFromStationId();
+                double distance = calculateDistance(stationsMap.get(current.getStationId()), stationsMap.get(nextStationId));
+                double additionalTime = distance / getSpeed(route.getRouteType());
+
+                double newTotalTime = current.getTotalTime() + additionalTime;
+                PathNode nextNode = bestPaths.get(nextStationId);
+                if (nextNode == null || calculatePathCost(nextNode, null) > calculatePathCost(current, null)) {
+                    nextNode = new PathNode(nextStationId, newTotalTime, current, route.getRouteType(), 0);
+                    queue.add(nextNode);
+                    bestPaths.put(nextStationId, nextNode);
                 }
             }
         }
@@ -343,9 +451,11 @@ public class DispatchService {
         List<String> routeDescriptions = new ArrayList<>();
         while (current.getPrevious() != null) {
             // 从路径节点中获取路线类型
+//            stationsMap.get(current.getStationId()).getName()
+//            stationsMap.get(current.getPrevious().getStationId()).getName()
             String routeType = current.getRouteType();
-            String routeDescription = "经过 " + stationsMap.get(current.getPrevious().getStationId()).getName() + " > " +
-                    stationsMap.get(current.getStationId()).getName() + " 的 " + routeType + " 路线";
+            String routeDescription = "经过 " + stationsMap.get(current.getStationId()).getName() + " > " +
+                    stationsMap.get(current.getPrevious().getStationId()).getName() + " 的 " + routeType + " 路线";
             routeDescriptions.add(routeDescription);
 
             // 调试输出

@@ -213,7 +213,7 @@ export default {
           BarChart.setOption(storageBar);
         } else {
           this.$message.error(res.msg);
-          window.alert("失败");}
+          }
       })
     },
     avaliableShow(){
@@ -226,7 +226,7 @@ export default {
           PieChart1.setOption(storagePie);
         } else {
           this.$message.error(res.msg);
-          window.alert("失败");}
+          }
       })
     },
     routeTypeShow(){
@@ -239,7 +239,7 @@ export default {
           PieChart2.setOption(routeTypePie);
         } else {
           this.$message.error(res.msg);
-          window.alert("失败");}
+          }
       })
     },
     goodsTypeShow(){
@@ -253,7 +253,7 @@ export default {
           PieChart3.setOption(goodsTypePie);
         } else {
           this.$message.error(res.msg);
-          window.alert("失败");}
+          }
       })
     },
 
