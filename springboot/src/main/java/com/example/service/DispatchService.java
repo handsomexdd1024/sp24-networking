@@ -119,6 +119,78 @@ public class DispatchService {
         return result;
     }
 
+    public DispatchResult simulateAntColonyDispatch(int targetStationId, String goodsName, int quantity) {
+        DispatchResult result = new DispatchResult();
+
+        // Load necessary data
+        loadData();
+
+        // Get initial paths using Ant Colony Optimization
+        List<PathNode> initialPaths = findAntColonyPaths(targetStationId);
+
+        // Dispatch goods from paths found by Ant Colony Optimization
+        int remainingQuantity = dispatchFromPaths(initialPaths, targetStationId, goodsName, quantity, result);
+
+        // If there are remaining goods to be dispatched, use transfer paths
+        if (remainingQuantity > 0) {
+            remainingQuantity = dispatchViaTransfer(targetStationId, goodsName, remainingQuantity, result);
+        }
+
+        result.setTotalDispatched(quantity - remainingQuantity);
+
+        return result;
+    }
+
+    private List<PathNode> findAntColonyPaths(int targetStationId) {
+        List<PathNode> paths = new ArrayList<>();
+
+        // Generate the graph from database
+        Graph graph = generateGraphFromDatabase();
+
+        // Find the target station node
+        Node targetNode = graph.findNode(stationsMap.get(targetStationId).getName());
+
+        // Ensure the target node exists
+        if (targetNode == null) {
+            throw new IllegalArgumentException("Target station not found in the graph: " + targetStationId);
+        }
+
+        // Use Ant Colony Optimization to find the best paths
+        AntColonyOptimization aco = new AntColonyOptimization(graph, 1.0, 5.0, 0.5, 100.0);
+        List<Node> allNodes = graph.getNodes();
+        for (Node node : allNodes) {
+            if (!node.equals(targetNode)) {
+                List<Node> path = aco.findShortestPath(node, targetNode, 10, 100);
+                if (path != null && !path.isEmpty()) {
+                    for (int i = 0; i < path.size() - 1; i++) {
+                        Node fromNode = path.get(i);
+                        Node toNode = path.get(i + 1);
+                        Station fromStation = getStationByName(fromNode.name);
+                        Station toStation = getStationByName(toNode.name);
+                        if (fromStation != null && toStation != null) {
+                            Route route = getRoute(fromStation.getId(), toStation.getId());
+                            if (route != null) {
+                                PathNode pathNode = new PathNode(fromStation.getId(), 0, null, route.getRouteType(), 0);
+                                paths.add(pathNode);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return paths;
+    }
+
+    private Station getStationByName(String name) {
+        for (Station station : stationsMap.values()) {
+            if (station.getName().equals(name)) {
+                return station;
+            }
+        }
+        return null;
+    }
+
 
 
 

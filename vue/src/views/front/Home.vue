@@ -46,15 +46,6 @@
       <div v-if="activeName === 'second'" class="records">
         <div class="records-text" v-html="result"></div>
       </div>
-
-      <div class="Ant-test" style="margin-top: 20px">
-        <el-select v-model="selectedAntCity" style="width: 100%" class="Ant-city-select" placeholder="选择城市">
-          <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.id"></el-option>
-        </el-select>
-
-        <el-button type="primary" @click="testAntColony">蚁群测试</el-button>
-      </div>
-      <div class="Ant-test-result" v-html="antResult"></div>
     </div>
 
     <div class="control-panel" v-if="user.role === 'ADMIN'">
@@ -425,25 +416,27 @@ export default {
       let apiEndpoint = '/dispatch/simulateFastest';
       if (this.transportScheme === 'economic') {
         apiEndpoint = '/dispatch/simulateEconomic';
+      } else if (this.transportScheme === 'Ant') {
+        apiEndpoint = '/dispatch/simulateAntColony';
       }
 
       this.$request.post(`${apiEndpoint}?${queryString}`).then((res) => {
         console.log("Response from backend:", res); // 添加调试信息
 
-        if (res.code === '200') {  // 修改此处为检查res.code而不是res.data.code
+        if (res.code === '200') {
           const [dispatchResult, operations] = res.data;  // 确保这里的数据结构正确
           console.log("Dispatch Result:", dispatchResult); // 添加调试信息
           console.log("Operations:", operations); // 添加调试信息
 
           this.progress = (dispatchResult.totalDispatched / payload.quantity) * 100;
           this.result = `
-        <p>调货日志:</p>
-        <ul>${dispatchResult.logs.map(log => `<li>${log}</li>`).join('')}</ul>
-        <p>总共调取: ${dispatchResult.totalDispatched} 吨货物</p>
-        <p>总需求量: ${payload.quantity} 吨货物</p>
-        <p>最长时间: ${dispatchResult.maxTime.toFixed(2)} 小时</p>
-        <p>总成本: ${dispatchResult.totalCost.toFixed(2)} 元</p>
-      `;
+                    <p>调货日志:</p>
+                    <ul>${dispatchResult.logs.map(log => `<li>${log}</li>`).join('')}</ul>
+                    <p>总共调取: ${dispatchResult.totalDispatched} 吨货物</p>
+                    <p>总需求量: ${payload.quantity} 吨货物</p>
+                    <p>最长时间: ${dispatchResult.maxTime.toFixed(2)} 小时</p>
+                    <p>总成本: ${dispatchResult.totalCost.toFixed(2)} 元</p>
+                `;
         } else {
           this.$message.error(res.msg); // 修改此处为res.msg而不是res.data.msg
           this.result = '模拟失败，请重试';

@@ -60,4 +60,18 @@ public class DispatchController {
             return Result.error();
         }
     }
+
+    @PostMapping("/simulateAntColony")
+    public Result simulateAntColonyDispatch(@RequestParam("targetStationId") int targetStationId,
+                                            @RequestParam("goodsName") String goodsName,
+                                            @RequestParam("quantity") int quantity) {
+        try {
+            DispatchResult result = dispatchService.simulateAntColonyDispatch(targetStationId, goodsName, quantity);
+            List<Operation> operations = dispatchService.getOperations();
+            return Result.success(new Object[]{result, operations});
+        } catch (Exception e) {
+            e.printStackTrace(); // 打印详细的错误信息
+            return Result.error();
+        }
+    }
 }
