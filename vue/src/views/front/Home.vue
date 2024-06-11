@@ -48,9 +48,10 @@
       </div>
 
       <div class="Ant-test" style="margin-top: 20px">
-        <el-select v-model="selectedCity" style="width: 100%" placeholder="选择城市">
-          <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.name"></el-option>
+        <el-select v-model="selectedAntCity" style="width: 100%" class="Ant-city-select" placeholder="选择城市">
+          <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.id"></el-option>
         </el-select>
+
         <el-button type="primary" @click="testAntColony">蚁群测试</el-button>
       </div>
       <div class="Ant-test-result" v-html="antResult"></div>
@@ -76,6 +77,7 @@ export default {
       categories: [],
       goodsList: [],
       selectedCity: '',
+      selectedAntCity: '',
       selectedStation: '',
       selectedCategory: '',
       selectedGoods: '',
@@ -493,8 +495,14 @@ export default {
       this.$message.success('调货请求已发送');
     },
     testAntColony() {
+      const selectedStation = this.stations.find(station => station.id === this.selectedAntCity);
+      if (!selectedStation) {
+        this.$message.error('请选择有效的城市');
+        return;
+      }
+
       const payload = {
-        startCity: this.selectedCity,
+        startCity: selectedStation.name,
       };
 
       const queryString = new URLSearchParams(payload).toString();
