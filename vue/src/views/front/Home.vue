@@ -543,35 +543,49 @@ export default {
         };
       });
 
+      const updateSeries = (series, routeType) => {
+        return {
+          ...series,
+          data: series.data.map((link) => {
+            const highlightedLink = highlightedLinks.find(
+                (hl) =>
+                    hl.fromName === link.fromName &&
+                    hl.toName === link.toName &&
+                    hl.routeType === routeType
+            );
+            if (highlightedLink) {
+              return {
+                ...link,
+                lineStyle: {
+                  ...link.lineStyle,
+                  color: 'purple',
+                  opacity: 1,
+                },
+              };
+            }
+            return {
+              ...link,
+              lineStyle: {
+                ...link.lineStyle,
+                opacity: 0.1,
+              },
+            };
+          }),
+        };
+      };
+
       const option = {
         series: this.originalOption.series.map((series) => {
-          if (series.type === 'lines') {
+          if (series.name === '飞行路线') {
+            return updateSeries(series, 'flight');
+          } else if (series.name === '公路') {
+            return updateSeries(series, 'road');
+          } else if (series.name === '铁路') {
+            return updateSeries(series, 'rail');
+          } else if (series.name === '飞行路线动态') {
             return {
               ...series,
-              data: series.data.map((link) => {
-                const highlightedLink = highlightedLinks.find(
-                    (hl) =>
-                        (hl.fromName === link.fromName && hl.toName === link.toName) ||
-                        (hl.fromName === link.toName && hl.toName === link.fromName)
-                );
-                if (highlightedLink) {
-                  return {
-                    ...link,
-                    lineStyle: {
-                      ...link.lineStyle,
-                      color: 'purple',
-                      opacity: 1,
-                    },
-                  };
-                }
-                return {
-                  ...link,
-                  lineStyle: {
-                    ...link.lineStyle,
-                    opacity: 0.1,
-                  },
-                };
-              }),
+              data: [],
             };
           }
           return series;
