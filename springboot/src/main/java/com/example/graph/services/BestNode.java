@@ -1,8 +1,8 @@
-package Graph.services;
+package com.example.graph.services;
 
-import Graph.Ant.AntColonyOptimization;
-import Graph.graph_base.Graph;
-import Graph.graph_base.Node;
+import com.example.graph.Ant.AntColonyOptimization;
+import com.example.graph.graph_base.Graph;
+import com.example.graph.graph_base.Node;
 
 import java.util.List;
 

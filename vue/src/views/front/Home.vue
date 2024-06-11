@@ -46,6 +46,14 @@
       <div v-if="activeName === 'second'" class="records">
         <div class="records-text" v-html="result"></div>
       </div>
+
+      <div class="Ant-test" style="margin-top: 20px">
+        <el-select v-model="selectedCity" style="width: 100%" placeholder="选择城市">
+          <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.name"></el-option>
+        </el-select>
+        <el-button type="primary" @click="testAntColony">蚁群测试</el-button>
+      </div>
+      <div class="Ant-test-result" v-html="antResult"></div>
     </div>
 
     <div class="control-panel" v-if="user.role === 'ADMIN'">
@@ -67,6 +75,7 @@ export default {
       routes: [],
       categories: [],
       goodsList: [],
+      selectedCity: '',
       selectedStation: '',
       selectedCategory: '',
       selectedGoods: '',
@@ -77,6 +86,7 @@ export default {
       user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
       progress: 0,
       result: '',
+      antResult: '',
       activeName: 'first',
       activeStep: 0,
     };
@@ -481,6 +491,36 @@ export default {
     },
     requestDispatch() {
       this.$message.success('调货请求已发送');
+    },
+    testAntColony() {
+      const payload = {
+        startCity: this.selectedCity,
+      };
+
+      const queryString = new URLSearchParams(payload).toString();
+
+      this.antResult = '蚁群算法计算中...';
+
+      this.$request.post(`/dispatch/findShortestPathUsingAntColony?${queryString}`).then((res) => {
+        console.log("Response from backend:", res); // 添加调试信息
+
+        if (res.code === '200') {
+          const path = res.data; // 假设这里返回的是节点数组
+          console.log("Ant Colony Path:", path); // 添加调试信息
+
+          this.antResult = `
+            <p>蚁群算法最短路径:</p>
+            <ul>${path.map(node => `<li>${node.name}</li>`).join('')}</ul>
+          `;
+        } else {
+          this.$message.error(res.msg);
+          this.antResult = '蚁群算法计算失败，请重试';
+        }
+      }).catch((error) => {
+        console.error(error);
+        this.$message.error('蚁群算法计算失败，请重试');
+        this.antResult = '蚁群算法计算失败，请重试';
+      });
     },
   },
 };

@@ -40,7 +40,8 @@
     {"node1":"北京","node2":"天津","weight":1.0},
     {"node1":"北京","node2":"石家庄","weight":2.0},
     {"node1":"北京","node2":"沈阳","weight":3.0},
-    {"node1":"北京","node2":"长春","weight":4.0},
+
+    {"node1":"南宁","node2":"长春","weight":5.0},
     {"node1":"北京","node2":"哈尔滨","weight":5.0},
     {"node1":"北京","node2":"南京","weight":4.0},
     {"node1":"北京","node2":"上海","weight":5.0},
@@ -54,7 +55,7 @@
     {"node1":"天津","node2":"上海","weight":4.5},
     {"node1":"上海","node2":"南京","weight":1.0},
     {"node1":"重庆","node2":"成都","weight":2.0},
-    {"node1":"重庆","node2":"贵阳","weight":2.0},
+    {"node1":"上海","node2":"贵阳","weight":2.0},
     {"node1":"成都","node2":"昆明","weight":2.5},
     {"node1":"南宁","node2":"广州","weight":1.5},
     {"node1":"广州","node2":"深圳","weight":1.0},

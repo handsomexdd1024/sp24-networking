@@ -1,4 +1,4 @@
-package Graph.graph_base;
+package com.example.graph.graph_base;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;

@@ -13,6 +13,11 @@ import com.example.common.Constants;
 
 import com.example.dispatch.PathNode;
 import com.example.dto.Operation;
+import com.example.graph.services.BestNode;
+
+import com.example.graph.Ant.AntColonyOptimization;
+import com.example.graph.graph_base.Graph;
+import com.example.graph.graph_base.Node;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -355,6 +360,38 @@ public class DispatchService {
         }
 
         return new ArrayList<>(bestPaths.values());
+    }
+
+    public List<Node> findShortestPathUsingAntColony(String startCity) {
+        // 加载图形数据
+        Graph graph = new Graph("springboot/src/main/java/com/example/graph/graph.json");
+        graph.loadGraphFromJson();
+
+        // 找到起始站点对应的节点
+        Node targetNode = graph.findNode(startCity);
+        if (targetNode == null) {
+            throw new IllegalArgumentException("未找到起始城市: " + startCity);
+        }
+
+        // 获取所有节点名称
+        List<Node> allNodes = graph.getNodes();
+        List<String> nodeNames = new ArrayList<>();
+        for (Node node : allNodes) {
+            if (!node.equals(targetNode)) {
+                nodeNames.add(node.name);
+            }
+        }
+
+        // 使用蚁群算法找到距离目标节点最近的节点
+        AntColonyOptimization aco = new AntColonyOptimization(graph, 0.1, 5.0, 0.5, 12000);
+        BestNode bestNode = new BestNode(nodeNames);
+        Node closestNode = bestNode.findClosestNode(aco, graph, targetNode);
+
+        if (closestNode == null) {
+            throw new IllegalArgumentException("未找到有效路径");
+        }
+
+        return Arrays.asList(closestNode,targetNode);
     }
 
 

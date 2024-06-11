@@ -1,8 +1,8 @@
-package Graph.Ant;
+package com.example.graph.Ant;
 
-import Graph.graph_base.Edge;
-import Graph.graph_base.Graph;
-import Graph.graph_base.Node;
+import com.example.graph.graph_base.Edge;
+import com.example.graph.graph_base.Graph;
+import com.example.graph.graph_base.Node;
 
 import java.util.*;
 

@@ -1,22 +1,22 @@
-package Graph;
+package com.example.graph;
 
-import Graph.Ant.AntColonyOptimization;
-import Graph.graph_base.Graph;
-import Graph.graph_base.Node;
+import com.example.graph.Ant.AntColonyOptimization;
+import com.example.graph.graph_base.Graph;
+import com.example.graph.graph_base.Node;
 
 import java.util.Arrays;
 import java.util.List;
 
-import Graph.services.BestNode;
+import com.example.graph.services.BestNode;
 
 public class test {
     public static void main(String[] args) {
-        Graph graph = new Graph("D:\\Project Files\\futureNetwork_tsim\\tsim\\springboot\\src\\main\\java\\Graph\\graph.json");
+        Graph graph = new Graph("D:\\Project Files\\futureNetwork_tsim\\tsim\\springboot\\src\\main\\java\\com.example.Graph\\graph.json");
 
         graph.loadGraphFromJson();
 
         // 打印图
-        System.out.println("Graph:");
+        System.out.println("com.example.Graph:");
         graph.printGraph();
 
         AntColonyOptimization aco = new AntColonyOptimization(graph, 0.1, 5.0, 0.5, 12000);

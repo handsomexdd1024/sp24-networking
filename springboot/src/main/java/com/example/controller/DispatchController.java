@@ -4,6 +4,7 @@ import com.example.common.Result;
 import com.example.service.DispatchService;
 import com.example.dto.Operation;
 import com.example.dto.DispatchResult;
+import com.example.graph.graph_base.Node;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,6 +46,17 @@ public class DispatchController {
             return Result.success(new Object[]{result, operations});
         } catch (Exception e) {
             e.printStackTrace(); // 打印详细的错误信息
+            return Result.error();
+        }
+    }
+
+    @PostMapping("/findShortestPathUsingAntColony")
+    public Result findShortestPathUsingAntColony(@RequestParam("startCity") String startCity) {
+        try {
+            List<Node> path = dispatchService.findShortestPathUsingAntColony(startCity);
+            return Result.success(path);
+        } catch (Exception e) {
+            e.printStackTrace();
             return Result.error();
         }
     }

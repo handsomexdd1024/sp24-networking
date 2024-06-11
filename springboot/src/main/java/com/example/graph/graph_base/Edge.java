@@ -1,4 +1,4 @@
-package Graph.graph_base;
+package com.example.graph.graph_base;
 
 import java.util.Objects;
 
