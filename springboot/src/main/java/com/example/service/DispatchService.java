@@ -138,6 +138,10 @@ public class DispatchService {
 
         result.setTotalDispatched(quantity - remainingQuantity);
 
+        // 打印图形数据
+        Graph graph = generateGraphFromDatabase();
+        printGraphData(graph);
+
         return result;
     }
 
@@ -190,9 +194,6 @@ public class DispatchService {
         }
         return null;
     }
-
-
-
 
 
     private int dispatchFromPaths(List<PathNode> paths, int targetStationId, String goodsName, int quantity, DispatchResult result) {
@@ -268,13 +269,6 @@ public class DispatchService {
         }
         return remainingQuantity;
     }
-
-
-
-
-
-
-
 
     private int dispatchViaTransfer(int targetStationId, String goodsName, int remainingQuantity, DispatchResult result) {
         List<PathNode> initialPaths = findFastestPaths(targetStationId);
@@ -552,10 +546,6 @@ public class DispatchService {
         }
     }
 
-
-
-
-
     private double calculateDistance(Station from, Station to) {
         double lat1 = from.getLatitude();
         double lon1 = from.getLongitude();
@@ -612,9 +602,6 @@ public class DispatchService {
         return totalCost;
     }
 
-
-
-
     private Route getRoute(int fromStationId, int toStationId) {
         return adjacencyList.getOrDefault(toStationId, Collections.emptyList()).stream()
                 .filter(route -> route.getFromStationId() == fromStationId)
@@ -666,10 +653,4 @@ public class DispatchService {
 
         return logMessage.toString();
     }
-
-
-
-
-
-
 }

@@ -8,29 +8,18 @@ import com.github.pagehelper.PageInfo;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-/**
- * 用户管理前端操作接口
- **/
 @RestController
 @RequestMapping("/goods")
-
-/**
- * Controller是数据的入口
- * Service处理业务逻辑
- **/
-
 public class GoodsController {
 
-    //    引入Service
     @Resource
     private GoodsService goodsService;
 
-
     @PostMapping("/add")
-    public Result add(@RequestBody Goods goods){
+    public Result add(@RequestBody Goods goods) {
         int id = goodsService.add(goods);
         if (id != -1) {
             return Result.success(id);
@@ -39,54 +28,46 @@ public class GoodsController {
         }
     }
 
-    /**
-     * 删除
-     */
     @DeleteMapping("/delete/{id}")
     public Result deleteById(@PathVariable Integer id) {
         goodsService.deleteById(id);
         return Result.success();
     }
 
-    /**
-     * 批量删除
-     */
     @DeleteMapping("/delete/batch")
     public Result deleteBatch(@RequestBody List<Integer> ids) {
         goodsService.deleteBatch(ids);
         return Result.success();
     }
 
-    /**
-     * 修改
-     */
     @PutMapping("/update")
-    public Result updateById(@RequestBody Goods goods) {
-        goodsService.updateById(goods);
+    public Result updateById(@RequestBody Map<String, Object> payload) {
+        Goods goods = new Goods();
+        goods.setId((Integer) payload.get("id"));
+        goods.setName((String) payload.get("name"));
+        goods.setCategory((String) payload.get("category"));
+        goods.setQuantity((Integer) payload.get("quantity"));
+
+        Integer stationId = (Integer) payload.get("stationId");
+        Integer quantity = (Integer) payload.get("quantity");
+
+        goodsService.updateById(goods, stationId, quantity);
         return Result.success();
     }
 
-    /**
-     * 根据ID查询
-     */
+
     @GetMapping("/selectById/{id}")
     public Result selectById(@PathVariable Integer id) {
         Goods goods = goodsService.selectById(id);
         return Result.success(goods);
     }
 
-    /**
-     * 查询所有
-     */
     @GetMapping("/selectAll")
-    public Result selectAll(Goods goods ) {
+    public Result selectAll(Goods goods) {
         List<Goods> list = goodsService.selectAll(goods);
         return Result.success(list);
     }
 
-    /**
-     * 分页查询
-     */
     @GetMapping("/selectPage")
     public Result selectPage(Goods goods,
                              @RequestParam(defaultValue = "1") Integer pageNum,
@@ -114,7 +95,4 @@ public class GoodsController {
     public Result getGoodsNum() {
         return Result.success(goodsService.getTypeAndNum());
     }
-
-
-
 }

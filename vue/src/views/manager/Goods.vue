@@ -2,14 +2,12 @@
   <div>
     <div class="search">
       <el-input placeholder="请输入货物名称查询" style="width: 200px" v-model="name"></el-input>
-
       <el-button type="info" plain style="margin-left: 10px" @click="load(1)">查询</el-button>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
       <el-select v-model="selectedStation" placeholder="选择站点" @change="load(1)" style="width: 200px; margin-left: 10px;">
         <el-option v-for="station in stations" :key="station.id" :label="station.name" :value="station.id"></el-option>
       </el-select>
       <el-button type="warning" plain style="margin-left: 10px" @click="reset">重置</el-button>
-
     </div>
 
     <div class="operation">
@@ -42,8 +40,8 @@
             :page-sizes="[5, 10, 20]"
             :page-size="pageSize"
             layout="total, prev, pager, next"
-            :total="total">
-        </el-pagination>
+            :total="total"
+        ></el-pagination>
       </div>
     </div>
 
@@ -99,17 +97,17 @@ export default {
       user: JSON.parse(localStorage.getItem('xm-user') || '{}'),
       rules: {
         name: [
-          {required: true, message: '请输入货物名称', trigger: 'blur'},
+          { required: true, message: '请输入货物名称', trigger: 'blur' },
         ],
         category: [
-          {required: true, message: '请选择或输入货物类别', trigger: 'blur', validator: this.validateCategory}
+          { required: true, message: '请选择或输入货物类别', trigger: 'blur', validator: this.validateCategory }
         ],
         stationId: [
-          {required: true, message: '请选择站点', trigger: 'change'},
+          { required: true, message: '请选择站点', trigger: 'change' },
         ],
         quantity: [
-          {required: true, message: '请输入货物量', trigger: 'blur'},
-          {type: 'number', message: '货物量必须是数字', trigger: 'blur'},
+          { required: true, message: '请输入货物量', trigger: 'blur' },
+          { type: 'number', message: '货物量必须是数字', trigger: 'blur' },
         ]
       },
       ids: [],
@@ -162,35 +160,19 @@ export default {
           }
           const method = this.form.id ? 'PUT' : 'POST';
           const url = this.form.id ? '/goods/update' : '/goods/add';
+          const data = this.form.id
+              ? { ...this.form, stationId: this.form.stationId, quantity: this.form.quantity }
+              : this.form;
           this.$request({
             url,
             method,
-            data: this.form
+            data: data
           }).then(res => {
             if (res.code === '200') {
               this.$message.success('保存成功')
-              const goodsId = this.form.id ? this.form.id : res.data;
-              const stationGoods = {
-                stationId: this.form.stationId,
-                goodsId: goodsId,
-                quantity: this.form.quantity
-              };
-              const sgMethod = this.form.id ? 'PUT' : 'POST';
-              const sgUrl = this.form.id ? '/station-goods/update' : '/station-goods/add';
-              this.$request({
-                url: sgUrl,
-                method: sgMethod,
-                data: stationGoods
-              }).then(res => {
-                if (res.code === '200') {
-                  this.$message.success('关联成功')
-                  this.load(1)
-                  this.loadCategories();
-                  this.fromVisible = false
-                } else {
-                  this.$message.error(res.msg)
-                }
-              });
+              this.load(1)
+              this.loadCategories();
+              this.fromVisible = false
             } else {
               this.$message.error(res.msg)
             }
@@ -199,23 +181,16 @@ export default {
       })
     },
     del(id) {
-      this.$confirm('您确定删除吗？', '确认删除', {type: "warning"}).then(response => {
+      this.$confirm('您确定删除吗？', '确认删除', { type: "warning" }).then(response => {
         this.$request.delete('/goods/delete/' + id).then(res => {
           if (res.code === '200') {
             this.$message.success('操作成功')
-            this.$request.delete('/station-goods/delete/' + id).then(res => {
-              if (res.code === '200') {
-                this.$message.success('关联删除成功')
-                this.load(1)
-              } else {
-                this.$message.error(res.msg)
-              }
-            });
+            this.load(1)
           } else {
             this.$message.error(res.msg)
           }
         })
-      }).catch(() => {})
+      }).catch(() => { })
     },
     handleSelectionChange(rows) {
       this.ids = rows.map(v => v.id)
@@ -225,23 +200,16 @@ export default {
         this.$message.warning('请选择数据')
         return
       }
-      this.$confirm('您确定批量删除这些数据吗？', '确认删除', {type: "warning"}).then(response => {
-        this.$request.delete('/goods/delete/batch', {data: this.ids}).then(res => {
+      this.$confirm('您确定批量删除这些数据吗？', '确认删除', { type: "warning" }).then(response => {
+        this.$request.delete('/goods/delete/batch', { data: this.ids }).then(res => {
           if (res.code === '200') {
             this.$message.success('操作成功')
-            this.$request.delete('/station-goods/delete/batch', {data: this.ids}).then(res => {
-              if (res.code === '200') {
-                this.$message.success('关联删除成功')
-                this.load(1)
-              } else {
-                this.$message.error(res.msg)
-              }
-            });
+            this.load(1)
           } else {
             this.$message.error(res.msg)
           }
         })
-      }).catch(() => {})
+      }).catch(() => { })
     },
     load(pageNum) {
       if (pageNum) this.pageNum = pageNum;

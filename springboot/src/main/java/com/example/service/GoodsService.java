@@ -2,15 +2,16 @@ package com.example.service;
 
 
 import com.example.entity.Goods;
-import com.example.entity.GoodsTypeNum;
 import com.example.entity.Station;
 import com.example.entity.StationGoods;
+import com.example.entity.GoodsTypeNum;
 import com.example.mapper.GoodsMapper;
 import com.example.mapper.StationMapper;
 import com.example.mapper.StationGoodsMapper;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -39,18 +40,15 @@ public class GoodsService {
     /**
      * 删除
      */
+    @Transactional
     public void deleteById(Integer id) {
-        // 查找与此货物关联的station_goods记录
         StationGoods stationGoods = stationGoodsMapper.selectByGoodsId(id);
         if (stationGoods != null) {
-            // 更新站点的存储量
             Station station = stationMapper.selectById(stationGoods.getStationId());
             station.setStorage(station.getStorage() + stationGoods.getQuantity());
             stationMapper.updateById(station);
-            // 删除station_goods记录
             stationGoodsMapper.deleteById(stationGoods.getId());
         }
-        // 删除goods记录
         goodsMapper.deleteById(id);
     }
 
@@ -66,17 +64,25 @@ public class GoodsService {
     /**
      * 修改
      */
-    public void updateById(Goods goods) {
+    @Transactional
+    public void updateById(Goods goods, Integer newStationId, Integer newQuantity) {
         goodsMapper.updateById(goods);
-        // 这里添加更新station_goods表和stations表逻辑
         StationGoods stationGoods = stationGoodsMapper.selectByGoodsId(goods.getId());
         if (stationGoods != null) {
-            Station station = stationMapper.selectById(stationGoods.getStationId());
-            station.setStorage(station.getStorage() + stationGoods.getQuantity() - goods.getQuantity());
-            stationMapper.updateById(station);
-            stationGoods.setQuantity(goods.getQuantity());
-            stationGoodsMapper.updateById(stationGoods);
+            Station oldStation = stationMapper.selectById(stationGoods.getStationId());
+            oldStation.setStorage(oldStation.getStorage() + stationGoods.getQuantity());
+            stationMapper.updateById(oldStation);
+            stationGoodsMapper.deleteById(stationGoods.getId());
         }
+        StationGoods newStationGoods = new StationGoods();
+        newStationGoods.setStationId(newStationId);
+        newStationGoods.setGoodsId(goods.getId());
+        newStationGoods.setQuantity(newQuantity);
+        stationGoodsMapper.insert(newStationGoods);
+
+        Station newStation = stationMapper.selectById(newStationId);
+        newStation.setStorage(newStation.getStorage() - newQuantity);
+        stationMapper.updateById(newStation);
     }
 
     /**
