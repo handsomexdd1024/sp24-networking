@@ -118,8 +118,26 @@ export default {
     fetchData() {
       this.$request.get('/station/selectAll').then((res) => {
         if (res.code === '200') {
-          this.stations = res.data;
-          this.checkAndInitChart();
+          const stations = res.data;
+
+          // 获取每个站点的货物信息，判断是否有货
+          const stationGoodsPromises = stations.map(station =>
+              this.$request.get(`/station-goods/selectByStationId/${station.id}`)
+          );
+
+          Promise.all(stationGoodsPromises).then(responses => {
+            responses.forEach((response, index) => {
+              if (response.code === '200') {
+                stations[index].hasGoods = response.data.length > 0;
+              } else {
+                stations[index].hasGoods = false;
+              }
+            });
+            this.stations = stations;
+            this.checkAndInitChart();
+          }).catch(err => {
+            this.$message.error('获取站点货物信息失败');
+          });
         } else {
           this.$message.error(res.msg);
         }
@@ -174,6 +192,7 @@ export default {
                 value: [station.longitude, station.latitude],
                 storage: station.storage,
                 disableFlag: station.disableFlag,
+                hasGoods: station.hasGoods, // 添加 hasGoods 字段
               };
             });
 
@@ -278,7 +297,13 @@ export default {
                   itemStyle: {
                     normal: {
                       color: function (params) {
-                        return params.data.disableFlag === '1' ? 'red' : '#738ace';
+                        if (params.data.disableFlag === '1') {
+                          return 'red';
+                        } else if (!params.data.hasGoods) {
+                          return 'black';
+                        } else {
+                          return '#738ace';
+                        }
                       },
                     },
                   },
