@@ -196,10 +196,18 @@ public class DispatchService {
     }
 
 
+
+
+
     private int dispatchFromPaths(List<PathNode> paths, int targetStationId, String goodsName, int quantity, DispatchResult result) {
         int remainingQuantity = quantity;
         for (PathNode path : paths) {
             int stationId = path.getStationId();
+            if (!stationsMap.containsKey(stationId)) {
+                System.err.println("Station ID " + stationId + " not found in stationsMap.");
+                continue;
+            }
+
             List<StationGoods> goodsList = getGoodsAtStation(stationId, goodsName);
             for (StationGoods goods : goodsList) {
                 if (remainingQuantity <= 0) break;
@@ -243,6 +251,11 @@ public class DispatchService {
         int remainingQuantity = quantity;
         for (PathNode path : paths) {
             int stationId = path.getStationId();
+            if (!stationsMap.containsKey(stationId)) {
+                System.err.println("Station ID " + stationId + " not found in stationsMap.");
+                continue;
+            }
+
             List<StationGoods> goodsList = getGoodsAtStation(stationId, goodsName);
             for (StationGoods goods : goodsList) {
                 if (remainingQuantity <= 0) break;
@@ -251,16 +264,28 @@ public class DispatchService {
                 if (availableQuantity > 0) {
                     result.addUsedPath(path); // 记录使用的路径
 
+                    // 调试输出
+                    System.out.println("Dispatching from Station ID: " + stationId + " to Target Station ID: " + targetStationId);
+                    System.out.println("Route Type: " + path.getRouteType());
+                    System.out.println("Available Quantity: " + availableQuantity);
+                    System.out.println("Remaining Quantity: " + remainingQuantity);
+
                     if (availableQuantity >= remainingQuantity) {
                         path.setDispatchedQuantity(remainingQuantity); // 设置路径调度量
                         result.addLog(generateLogMessage(path, stationId, targetStationId, remainingQuantity));
                         updateGoodsQuantity(goods, remainingQuantity);
+
+                        // 调试输出
+                        System.out.println("Set Dispatched Quantity: " + remainingQuantity + " tons");
 
                         remainingQuantity = 0;
                     } else {
                         path.setDispatchedQuantity(availableQuantity); // 设置路径调度量
                         result.addLog(generateLogMessage(path, stationId, targetStationId, availableQuantity));
                         updateGoodsQuantity(goods, availableQuantity);
+
+                        // 调试输出
+                        System.out.println("Set Dispatched Quantity: " + availableQuantity + " tons");
 
                         remainingQuantity -= availableQuantity;
                     }
@@ -269,6 +294,13 @@ public class DispatchService {
         }
         return remainingQuantity;
     }
+
+
+
+
+
+
+
 
     private int dispatchViaTransfer(int targetStationId, String goodsName, int remainingQuantity, DispatchResult result) {
         List<PathNode> initialPaths = findFastestPaths(targetStationId);
@@ -305,6 +337,7 @@ public class DispatchService {
 
         return remainingQuantity;
     }
+
 
     private List<StationGoods> getGoodsAtStation(int stationId, String goodsName) {
         List<StationGoods> filteredGoods = stationGoodsList.stream()
@@ -370,17 +403,25 @@ public class DispatchService {
 
         while (!queue.isEmpty()) {
             PathNode current = queue.poll();
-            for (Route route : adjacencyList.getOrDefault(current.getStationId(), Collections.emptyList())) {
+            List<Route> routes = adjacencyList.getOrDefault(current.getStationId(), Collections.emptyList());
+            for (Route route : routes) {
                 if (!route.isEnabled()) continue;
 
                 int nextStationId = route.getFromStationId();
-                double distance = calculateDistance(stationsMap.get(current.getStationId()), stationsMap.get(nextStationId));
+                Station fromStation = stationsMap.get(current.getStationId());
+                Station toStation = stationsMap.get(nextStationId);
+                if (fromStation == null || toStation == null) {
+                    System.err.println("Station is null. From: " + fromStation + ", To: " + toStation);
+                    continue;
+                }
+
+                double distance = calculateDistance(fromStation, toStation);
                 double additionalTime = distance / getSpeed(route.getRouteType());
 
                 double newTotalTime = current.getTotalTime() + additionalTime;
                 PathNode nextNode = bestPaths.get(nextStationId);
                 if (nextNode == null || newTotalTime < nextNode.getTotalTime()) {
-                    nextNode = new PathNode(nextStationId, newTotalTime, current, route.getRouteType(), 0); // 设置路径类型
+                    nextNode = new PathNode(nextStationId, newTotalTime, current, route.getRouteType(), 0);
                     queue.add(nextNode);
                     bestPaths.put(nextStationId, nextNode);
 
@@ -409,11 +450,19 @@ public class DispatchService {
 
         while (!queue.isEmpty()) {
             PathNode current = queue.poll();
-            for (Route route : adjacencyList.getOrDefault(current.getStationId(), Collections.emptyList())) {
+            List<Route> routes = adjacencyList.getOrDefault(current.getStationId(), Collections.emptyList());
+            for (Route route : routes) {
                 if (!route.isEnabled()) continue;
 
                 int nextStationId = route.getFromStationId();
-                double distance = calculateDistance(stationsMap.get(current.getStationId()), stationsMap.get(nextStationId));
+                Station fromStation = stationsMap.get(current.getStationId());
+                Station toStation = stationsMap.get(nextStationId);
+                if (fromStation == null || toStation == null) {
+                    System.err.println("Station is null. From: " + fromStation + ", To: " + toStation);
+                    continue;
+                }
+
+                double distance = calculateDistance(fromStation, toStation);
                 double additionalTime = distance / getSpeed(route.getRouteType());
 
                 double newTotalTime = current.getTotalTime() + additionalTime;
@@ -422,6 +471,13 @@ public class DispatchService {
                     nextNode = new PathNode(nextStationId, newTotalTime, current, route.getRouteType(), 0);
                     queue.add(nextNode);
                     bestPaths.put(nextStationId, nextNode);
+
+                    // 调试输出
+                    System.out.println("Selected Path: " + current.getStationId() + " -> " + nextStationId);
+                    System.out.println("Route Type: " + route.getRouteType());
+                    System.out.println("Distance: " + distance);
+                    System.out.println("Speed: " + getSpeed(route.getRouteType()));
+                    System.out.println("Total Time: " + newTotalTime);
                 }
             }
         }
@@ -546,14 +602,21 @@ public class DispatchService {
         }
     }
 
+
+
+
+
     private double calculateDistance(Station from, Station to) {
+        if (from == null || to == null) {
+            throw new IllegalArgumentException("From or To station is null. From: " + from + ", To: " + to);
+        }
         double lat1 = from.getLatitude();
         double lon1 = from.getLongitude();
         double lat2 = to.getLatitude();
         double lon2 = to.getLongitude();
         double R = 6371; // 地球半径，单位：公里
         double dLat = Math.toRadians(lat2 - lat1);
-        double dLon = Math.toRadians(lon2 - lon1);
+        double dLon = Math.toRadians(lon1 - lon2);
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
                 Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
                         Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -561,6 +624,7 @@ public class DispatchService {
         double distance = R * c; // 单位：公里
         return distance;
     }
+
 
     private double getSpeed(String routeType) {
         switch (routeType) {
@@ -601,6 +665,9 @@ public class DispatchService {
         }
         return totalCost;
     }
+
+
+
 
     private Route getRoute(int fromStationId, int toStationId) {
         return adjacencyList.getOrDefault(toStationId, Collections.emptyList()).stream()

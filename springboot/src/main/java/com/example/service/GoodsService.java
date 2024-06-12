@@ -2,9 +2,9 @@ package com.example.service;
 
 
 import com.example.entity.Goods;
+import com.example.entity.GoodsTypeNum;
 import com.example.entity.Station;
 import com.example.entity.StationGoods;
-import com.example.entity.GoodsTypeNum;
 import com.example.mapper.GoodsMapper;
 import com.example.mapper.StationMapper;
 import com.example.mapper.StationGoodsMapper;
@@ -40,15 +40,18 @@ public class GoodsService {
     /**
      * 删除
      */
-    @Transactional
     public void deleteById(Integer id) {
+        // 查找与此货物关联的station_goods记录
         StationGoods stationGoods = stationGoodsMapper.selectByGoodsId(id);
         if (stationGoods != null) {
+            // 更新站点的存储量
             Station station = stationMapper.selectById(stationGoods.getStationId());
             station.setStorage(station.getStorage() + stationGoods.getQuantity());
             stationMapper.updateById(station);
+            // 删除station_goods记录
             stationGoodsMapper.deleteById(stationGoods.getId());
         }
+        // 删除goods记录
         goodsMapper.deleteById(id);
     }
 

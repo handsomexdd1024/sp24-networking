@@ -22,11 +22,11 @@
         </div>
       </div>
 
-      <div style="display: flex; flex-wrap: wrap; justify-content: space-between;">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; margin-top: 10px">
         <div style="width: 48%; height: 300px;" class="card" id="standStorage"></div>
         <div style="width: 48%; height: 300px;" class="card" id="standAvaliable"></div>
-        <div style="width: 48%; height: 300px;" class="card" id="routeType"></div>
-        <div style="width: 48%; height: 300px;" class="card" id="goodsType"></div>
+        <div style="width: 48%; height: 300px;margin-top: 10px" class="card" id="routeType"></div>
+        <div style="width: 48%; height: 300px;margin-top: 10px" class="card" id="goodsType"></div>
       </div>
     </div>
   </div>
