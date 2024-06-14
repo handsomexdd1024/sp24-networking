@@ -1,17 +1,83 @@
 # 未来互联网物流管理系统开发
 
-> tsim
+> 基于
 >
-> author：**Lev** | **Dream_Autumn** | **handsomexdd1024** | **周明巍** | **单敬雯**
+> 作者与贡献比：**严文轩 **55% | **周明巍**25% | **单敬雯**10% | **李浩鑫**10%
 
-## 项目日志
+## 项目提交日志
 
 
 
 - 5.2
-  - 上传脚手架与数据库`Lev`
-  - 完成用户、管理员身份设计，完成路由管理`Lev`
-  - 完成注册登录，个人信息管理功能`Lev`
+  
+  - 上传脚手架与数据库 `严文轩`
+  - 完成用户、管理员身份设计，完成路由管理 `严文轩`
+  - 完成注册登录，个人信息管理功能 `严文轩`
+  
+- 5.5
+
+  - 添加基础数据模型 `杨濛`
+
+    > 定义了实体，然而不符合mybatis代码规范，没有启用
+
+- 6.1
+
+  - 基础Echarts地图端 `严文轩`
+  - 在地图端静态展示站点和三种运输方式 `严文轩`
+  - 站点管理后端 `严文轩`
+  - 路径管理后端 `严文轩`
+  - 货物管理后端 `严文轩`
+  - 站点货物关联管理后端 `严文轩`
+  - 实现了管理端站点与路径管理的初步界面 `严文轩`
+  - 实现了地图端动态从数据库获取站点和三种路径 `严文轩`
+
+- 6.2
+
+  - 添加了站点管理端的部分相关功能 `单敬雯`
+  - 添加了一二线城市、新一线城市相关信息作为常量，管理员可以选择常量直接部署站点，也可以选择手动输入站点经纬度添加临时站点  `严文轩`
+  - 添加了货物管理端的部分相关功能 `李浩鑫`
+
+- 6.5
+
+  - 完成了监管者身份的数据库与后端以及管理界面  `严文轩`
+  - 添加了三种路径的速度与成本常量  `严文轩`
+  - 完成了货物表与站点货物表关联管理的功能  `严文轩`
+  - 基于无向有权图的蚁群最短路径算法实现  `周明巍`
+
+- 6.7
+
+  - 完成物资根据站点分页查询  `严文轩`
+  - 完成无向有权图的蚁群算法获取list内最佳城市结点 `周明巍`
+  - 完善了站点管理端的相关功能 `单敬雯`
+
+- 6.9
+
+  -  对蚁群算法动态接入的部分尝试  `严文轩`
+  - 管理端数据可视化Echarts图表展示 `李浩鑫`
+
+- 6.10
+
+  - 基于货物类型与名称的最快速调度算法路径选择静态实现  `严文轩`
+  - 蚁群算法更新存储图 `周明巍`
+  - 最快速调度算法添加修改后端数据与返回调货记录到前端的功能  `严文轩`
+
+- 6.11
+
+  - 最快速调度算法完成所有功能  `严文轩`
+  - 最经济调度算法实现  `严文轩`
+  - 前端适配算法最快速、最经济算法的部分功能 `严文轩`
+  - 超管身份验证与功能分配 `严文轩`
+  - 将蚁群算法返回结果展示在前端 `严文轩`
+  - 修改蚁群算法，能够根据数据库动态生成图 `严文轩`
+  - 添加了使用蚁群算法调货的逻辑 `严文轩`
+  - 地图端添加展示算法规划的路径信息 `严文轩`
+
+- 6.12
+
+  - 地图端健壮测试以及debug `严文轩`
+  - 管理端健壮测试以及debug `严文轩`
+  - 算法健壮测试，返回信息调整以及debug `严文轩`
+
 
 
 
@@ -19,7 +85,7 @@
 
 1. 需要配置
    - nodejs16
-   - jdk1.8
+   - jdk18
    - mysql5.7
    - idea
 
@@ -27,19 +93,15 @@
 
 2. maven配置
 
-克隆后请检查pom.xml,如果为此图标
+IDEA克隆后右键点击pom.xml,创建为maven项目
 
-![image-20240502150621818](README.assets/image-20240502150621818.png)
 
-则表明maven配置已完成，进行vue配置
 
 
 
 3. vue配置
 
-检查vue目录下是否有vue/node_modules
-
-- 如果没有，在终端执行
+- 在项目根目录下终端执行
 
   ```
   cd vue
@@ -48,7 +110,7 @@
 
   安装Vue
 
-- 如果有，进行启动配置
+- 进行前端启动配置npm run serve
 
   > 编辑配置-> + -> npm -> package.jason(P)：选择jason -> 脚本(T)选择：serve
 
@@ -56,7 +118,7 @@
 
 4. Echarts安装
 
-   在根目录下安装Echarts
+   在根目录下安装Echarts，在项目根目录下终端执行
 
 ```
 npm install echarts --save
@@ -64,157 +126,387 @@ npm install echarts --save
 
 
 
-- 启动
+- 启动前后端
 
 
 
 ## 项目结构
 
+│   
 
+├─springboot
 
-### manager
+│ │ pom.xml
 
+│ │ 
 
+│ └─src
 
-#### springboot[后端目录]
+│   └─main
 
+│     ├─java
 
+│     │ └─com
 
-- src-main
+│     │   └─example
 
-  - java
+│     │     │ SpringbootApplication.java
 
-    - com.example
+│     │     │ 
 
-    - common
+│     │     ├─common
 
-      - config
+│     │     │ │ City.java
 
-        - CorsConfig.java
+│     │     │ │ Constants.java
 
-          > 后端跨域配置（允许前端访问接口）
+│     │     │ │ Result.java
 
-        - JwtInterceptor.java
+│     │     │ │ 
 
-          > 拦截器（拦截请求，做过滤）
+│     │     │ ├─config
 
-        - WebConfig.java
+│     │     │ │   CorsConfig.java
 
-          > 配置Jwt拦截器，通过其中一个配置类生气
+│     │     │ │   JwtInterceptor.java
 
-      - enums
+│     │     │ │   WebConfig.java
 
-        > 枚举，定义编码/信息
+│     │     │ │   
 
-        - ResultCodeEnum.java
+│     │     │ └─enums
 
-        > 定义状态码的枚举类
+│     │     │     MemberEnum.java
 
-        - RoleEnum.java
+│     │     │     ResultCodeEnum.java
 
-          > 角色枚举类
+│     │     │     RoleEnum.java
 
-      - Constants.java
+│     │     │     
 
-      > 常量
+│     │     ├─controller
 
-      - Result.java
+│     │     │   AdminController.java
 
-        > 接口返回的通用返回类，包装controller返回的数据
+│     │     │   DispatchController.java
 
-    - controller✨
+│     │     │   FileController.java
 
-      > mybatis架构返回数据两种方式：
-      >
-      > 1. 注解
-      >
-      > 2. xml
-      >
-      >    controller->service->mapper
+│     │     │   GoodsController.java
 
-    - entity
+│     │     │   NoticeController.java
 
-      - Account.java
+│     │     │   RouteController.java
 
-        > 所有账户基类
+│     │     │   StationController.java
 
-      - Admin.java
+│     │     │   StationGoodsController.java
 
-    - exception
+│     │     │   SupervisorController.java
 
-      - GlobalExceptionHandler.java
+│     │     │   UserController.java
 
-        > 全局异常处理
+│     │     │   WebController.java
 
-    - mapper
+│     │     │   
 
-    - service
+│     │     ├─dispatch
 
-    - utils
+│     │     │   PathNode.java
 
-  - resources
+│     │     │   
 
-    - mapper
-    - application.yml
+│     │     ├─dto
 
-- pom.xml
+│     │     │   DispatchResult.java
 
-### vue[前端目录]
+│     │     │   Operation.java
 
+│     │     │   
 
+│     │     ├─entity
 
-- public
+│     │     │   Account.java
 
-  > 工程入口
+│     │     │   Admin.java
 
-- src
+│     │     │   Goods.java
 
-  - assets
+│     │     │   GoodsTypeNum.java
 
-    > 静态文件
+│     │     │   Notice.java
 
-  - cmoponents
+│     │     │   Route.java
 
-    > 组件，封装验证码等
+│     │     │   Station.java
 
-  - router
+│     │     │   StationGoods.java
 
-    > 路由（跳转地址栏变化）
+│     │     │   Supervisor.java
 
-  - utils
+│     │     │   User.java
 
-    - request.js
+│     │     │   
 
-      > axios封装
+│     │     ├─exception
 
-  - views
+│     │     │   CustomException.java
 
-    > 前后台页面
+│     │     │   GlobalExceptionHandler.java
 
-    - front
-    - manager
+│     │     │   
 
-  - App.vue
+│     │     ├─graph
 
-    > Vue的入口
+│     │     │ │ graph.json
 
-  - main.js
+│     │     │ │ 
 
-    > 导入所有需要的文件
+│     │     │ ├─Ant
 
-- .env.development
+│     │     │ │   AntColonyOptimization.java
 
-  > 后台开发URL
+│     │     │ │   
 
-- .env.production
+│     │     │ ├─graph_base
 
-  > 后端打包URL
+│     │     │ │   Edge.java
 
-- package.json
+│     │     │ │   Graph.java
 
-> 依赖配置
+│     │     │ │   Node.java
 
-- vue.config.js
+│     │     │ │   
 
-> Vue全局配置文件
+│     │     │ └─services
+
+│     │     │     BestNode.java
+
+│     │     │     
+
+│     │     ├─mapper
+
+│     │     │   AdminMapper.java
+
+│     │     │   GoodsMapper.java
+
+│     │     │   NoticeMapper.java
+
+│     │     │   RouteMapper.java
+
+│     │     │   StationGoodsMapper.java
+
+│     │     │   StationMapper.java
+
+│     │     │   SupervisorMapper.java
+
+│     │     │   UserMapper.java
+
+│     │     │   
+
+│     │     ├─model
+
+│     │     │   Goods.java
+
+│     │     │   GoodsItem.java
+
+│     │     │   Route.java
+
+│     │     │   Station.java
+
+│     │     │   TransportTask.java
+
+│     │     │   TransportType.java
+
+│     │     │   
+
+│     │     ├─service
+
+│     │     │   AdminService.java
+
+│     │     │   DispatchService.java
+
+│     │     │   GoodsService.java
+
+│     │     │   NoticeService.java
+
+│     │     │   RouteService.java
+
+│     │     │   RouteWeightCalculator.java
+
+│     │     │   StationGoodsService.java
+
+│     │     │   StationService.java
+
+│     │     │   SupervisorService.java
+
+│     │     │   UserService.java
+
+│     │     │   
+
+│     │     └─utils
+
+│     │         TokenUtils.java
+
+│     │         
+
+│     └─resources
+
+│       │ application.yml
+
+│       │ 
+
+│       └─mapper
+
+│           AdminMapper.xml
+
+│           GoodsMapper.xml
+
+│           NoticeMapper.xml
+
+│           RouteMapper.xml
+
+│           StationGoodsMapper.xml
+
+│           StationMapper.xml
+
+│           SupervisorMapper.xml
+
+│           UserMapper.xml
+
+│           
+
+└─vue
+
+  │ .env.development
+
+  │ .env.production
+
+  │ babel.config.js
+
+  │ jsconfig.json
+
+  │ package-lock.json
+
+  │ package.json
+
+  │ vue.config.js
+
+  │ 
+
+  ├─public
+
+  │   favicon.ico
+
+  │   index.html
+
+  │   
+
+  └─src
+
+​    │ App.vue
+
+​    │ main.js
+
+​    │ 
+
+​    ├─assets
+
+​    │ ├─css
+
+​    │ │ │ front.css
+
+​    │ │ │ global.css
+
+​    │ │ │ home.css
+
+​    │ │ │ manager.css
+
+​    │ │ │ 
+
+​    │ │ └─theme
+
+​    │ │   │ index.css
+
+​    │ │   │ 
+
+​    │ │   └─fonts
+
+​    │ │       element-icons.ttf
+
+​    │ │       element-icons.woff
+
+​    │ │       
+
+​    │ └─imgs
+
+​    │     bg.jpg
+
+​    │     bg1.jpg
+
+​    │     logo.png
+
+​    │     
+
+​    ├─router
+
+​    │   index.js
+
+​    │   
+
+​    ├─utils
+
+​    │   request.js
+
+​    │   
+
+​    └─views
+
+​      │ 404.vue
+
+​      │ Front.vue
+
+​      │ Login.vue
+
+​      │ Manager.vue
+
+​      │ Register.vue
+
+​      │ 
+
+​      ├─front
+
+​      │   Home.vue
+
+​      │   Person.vue
+
+​      │   
+
+​      └─manager
+
+​          403.vue
+
+​          Admin.vue
+
+​          AdminPerson.vue
+
+​          Goods.vue
+
+​          Home.vue
+
+​          Notice.vue
+
+​          Password.vue
+
+​          Route.vue
+
+​          Station.vue
+
+​          Supervisor.vue
+
+​          User.vue
+
+​          
+
+
 
