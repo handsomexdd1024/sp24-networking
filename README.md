@@ -136,167 +136,162 @@ springboot-vue智能物流管理系统项目结构
 
 ### 后端
 
-springboot
-│  ├─ pom.xml
-│  └─ src
-│      └─ main
-│          ├─ java
-│          │  └─ com.example
-│          │      ├─ SpringbootApplication.java
-│          │      ├─ common
-│          │      │  ├─ City.java
-│          │      │  ├─ Constants.java
-│          │      │  ├─ Result.java
-│          │      │  ├─ config
-│          │      │  │  ├─ CorsConfig.java
-│          │      │  │  ├─ JwtInterceptor.java
-│          │      │  │  └─ WebConfig.java
-│          │      │  └─ enums
-│          │      │      ├─ MemberEnum.java
-│          │      │      ├─ ResultCodeEnum.java
-│          │      │      └─ RoleEnum.java
-│          │      ├─ controller
-│          │      │  ├─ AdminController.java
-│          │      │  ├─ DispatchController.java
-│          │      │  ├─ FileController.java
-│          │      │  ├─ GoodsController.java
-│          │      │  ├─ NoticeController.java
-│          │      │  ├─ RouteController.java
-│          │      │  ├─ StationController.java
-│          │      │  ├─ StationGoodsController.java
-│          │      │  ├─ SupervisorController.java
-│          │      │  └─ UserController.java
-│          │      ├─ dispatch
-│          │      │  └─ PathNode.java
-│          │      ├─ dto
-│          │      │  ├─ DispatchResult.java
-│          │      │  └─ Operation.java
-│          │      ├─ entity
-│          │      │  ├─ Account.java
-│          │      │  ├─ Admin.java
-│          │      │  ├─ Goods.java
-│          │      │  ├─ GoodsTypeNum.java
-│          │      │  ├─ Notice.java
-│          │      │  ├─ Route.java
-│          │      │  ├─ Station.java
-│          │      │  ├─ StationGoods.java
-│          │      │  ├─ Supervisor.java
-│          │      │  └─ User.java
-│          │      ├─ exception
-│          │      │  ├─ CustomException.java
-│          │      │  └─ GlobalExceptionHandler.java
-│          │      ├─ graph
-│          │      │  ├─ graph.json
-│          │      │  ├─ Ant
-│          │      │  │  └─ AntColonyOptimization.java
-│          │      │  └─ graph_base
-│          │      │      ├─ Edge.java
-│          │      │      ├─ Graph.java
-│          │      │      └─ Node.java
-│          │      ├─ services
-│          │      │  └─ BestNode.java
-│          │      ├─ mapper
-│          │      │  ├─ AdminMapper.java
-│          │      │  ├─ GoodsMapper.java
-│          │      │  ├─ NoticeMapper.java
-│          │      │  ├─ RouteMapper.java
-│          │      │  ├─ StationGoodsMapper.java
-│          │      │  ├─ StationMapper.java
-│          │      │  ├─ SupervisorMapper.java
-│          │      │  └─ UserMapper.java
-│          │      ├─ model
-│          │      │  ├─ Goods.java
-│          │      │  ├─ GoodsItem.java
-│          │      │  ├─ Route.java
-│          │      │  ├─ Station.java
-│          │      │  ├─ TransportTask.java
-│          │      │  └─ TransportType.java
-│          │      ├─ service
-│          │      │  ├─ AdminService.java
-│          │      │  ├─ DispatchService.java
-│          │      │  ├─ GoodsService.java
-│          │      │  ├─ NoticeService.java
-│          │      │  ├─ RouteService.java
-│          │      │  ├─ RouteWeightCalculator.java
-│          │      │  ├─ StationGoodsService.java
-│          │      │  ├─ StationService.java
-│          │      │  ├─ SupervisorService.java
-│          │      │  └─ UserService.java
-│          │      └─ utils
-│          │          └─ TokenUtils.java
-│          └─ resources
-│              ├─ application.yml
-│              └─ mapper
-│                  ├─ AdminMapper.xml
-│                  ├─ GoodsMapper.xml
-│                  ├─ NoticeMapper.xml
-│                  ├─ RouteMapper.xml
-│                  ├─ StationGoodsMapper.xml
-│                  ├─ StationMapper.xml
-│                  ├─ SupervisorMapper.xml
-│                  └─ UserMapper.xml
+├── pom.xml
+├── src
+│   └── main
+│       ├── java
+│       │   └── com.example
+│       │       ├── SpringbootApplication.java
+│       │       ├── common
+│       │       │   ├── City.java
+│       │       │   ├── Constants.java
+│       │       │   ├── Result.java
+│       │       │   ├── config
+│       │       │   │   ├── CorsConfig.java
+│       │       │   │   ├── JwtInterceptor.java
+│       │       │   │   └── WebConfig.java
+│       │       │   └── enums
+│       │       │       ├── MemberEnum.java
+│       │       │       ├── ResultCodeEnum.java
+│       │       │       └── RoleEnum.java
+│       │       ├── controller
+│       │       │   ├── AdminController.java
+│       │       │   ├── DispatchController.java
+│       │       │   ├── FileController.java
+│       │       │   ├── GoodsController.java
+│       │       │   ├── NoticeController.java
+│       │       │   ├── RouteController.java
+│       │       │   ├── StationController.java
+│       │       │   ├── StationGoodsController.java
+│       │       │   ├── SupervisorController.java
+│       │       │   └── UserController.java
+│       │       ├── dispatch
+│       │       │   └── PathNode.java
+│       │       ├── dto
+│       │       │   ├── DispatchResult.java
+│       │       │   └── Operation.java
+│       │       ├── entity
+│       │       │   ├── Account.java
+│       │       │   ├── Admin.java
+│       │       │   ├── Goods.java
+│       │       │   ├── GoodsTypeNum.java
+│       │       │   ├── Notice.java
+│       │       │   ├── Route.java
+│       │       │   ├── Station.java
+│       │       │   ├── StationGoods.java
+│       │       │   ├── Supervisor.java
+│       │       │   └── User.java
+│       │       ├── exception
+│       │       │   ├── CustomException.java
+│       │       │   └── GlobalExceptionHandler.java
+│       │       ├── graph
+│       │       │   ├── graph.json
+│       │       │   ├── Ant
+│       │       │   │   └── AntColonyOptimization.java
+│       │       │   └── graph_base
+│       │       │       ├── Edge.java
+│       │       │       ├── Graph.java
+│       │       │       └── Node.java
+│       │       ├── services
+│       │       │   └── BestNode.java
+│       │       ├── mapper
+│       │       │   ├── AdminMapper.java
+│       │       │   ├── GoodsMapper.java
+│       │       │   ├── NoticeMapper.java
+│       │       │   ├── RouteMapper.java
+│       │       │   ├── StationGoodsMapper.java
+│       │       │   ├── StationMapper.java
+│       │       │   ├── SupervisorMapper.java
+│       │       │   └── UserMapper.java
+│       │       ├── model
+│       │       │   ├── Goods.java
+│       │       │   ├── GoodsItem.java
+│       │       │   ├── Route.java
+│       │       │   ├── Station.java
+│       │       │   ├── TransportTask.java
+│       │       │   └── TransportType.java
+│       │       ├── service
+│       │       │   ├── AdminService.java
+│       │       │   ├── DispatchService.java
+│       │       │   ├── GoodsService.java
+│       │       │   ├── NoticeService.java
+│       │       │   ├── RouteService.java
+│       │       │   ├── RouteWeightCalculator.java
+│       │       │   ├── StationGoodsService.java
+│       │       │   ├── StationService.java
+│       │       │   ├── SupervisorService.java
+│       │       │   └── UserService.java
+│       │       └── utils
+│       │           └── TokenUtils.java
+│       └── resources
+│           ├── application.yml
+│           └── mapper
+│               ├── AdminMapper.xml
+│               ├── GoodsMapper.xml
+│               ├── NoticeMapper.xml
+│               ├── RouteMapper.xml
+│               ├── StationGoodsMapper.xml
+│               ├── StationMapper.xml
+│               ├── SupervisorMapper.xml
+│               └── UserMapper.xml
 
 
 
 ### 前端
 
-vue
-│  ├─ .env.development
-│  ├─ .env.production
-│  ├─ babel.config.js
-│  ├─ jsconfig.json
-│  ├─ package-lock.json
-│  ├─ package.json
-│  ├─ vue.config.js
-│  ├─ public
-│  │  ├─ favicon.ico
-│  │  └─ index.html
-│  └─ src
-│      ├─ App.vue
-│      ├─ main.js
-│      ├─ assets
-│      │  ├─ css
-│      │  │  ├─ front.css
-│      │  │  ├─ global.css
-│      │  │  ├─ home.css
-│      │  │  ├─ manager.css
-│      │  │  └─ theme
-│      │  │      ├─ index.css
-│      │  │      └─ fonts
-│      │  │          ├─ element-icons.ttf
-│      │  │          └─ element-icons.woff
-│      │  └─ imgs
-│      │      ├─ bg.jpg
-│      │      ├─ bg1.jpg
-│      │      └─ logo.png
-│      ├─ router
-│      │  └─ index.js
-│      ├─ utils
-│      │  └─ request.js
-│      └─ views
-│          ├─ 404.vue
-│          ├─ Front.vue
-│          ├─ Login.vue
-│          ├─ Manager.vue
-│          ├─ Register.vue
-│          ├─ front
-│          │  ├─ Home.vue
-│          │  └─ Person.vue
-│          └─ manager
-│              ├─ 403.vue
-│              ├─ Admin.vue
-│              ├─ AdminPerson.vue
-│              ├─ Goods.vue
-│              ├─ Home.vue
-│              ├─ Notice.vue
-│              ├─ Password.vue
-│              ├─ Route.vue
-│              ├─ Station.vue
-│              ├─ Supervisor.vue
-│              └─ User.vue
-
-
-​          
+├── .env.development
+├── .env.production
+├── babel.config.js
+├── jsconfig.json
+├── package-lock.json
+├── package.json
+├── vue.config.js
+├── public
+│   ├── favicon.ico
+│   └── index.html
+└── src
+    ├── App.vue
+    ├── main.js
+    ├── assets
+    │   ├── css
+    │   │   ├── front.css
+    │   │   ├── global.css
+    │   │   ├── home.css
+    │   │   ├── manager.css
+    │   │   └── theme
+    │   │       ├── index.css
+    │   │       └── fonts
+    │   │           ├── element-icons.ttf
+    │   │           └── element-icons.woff
+    │   └── imgs
+    │       ├── bg.jpg
+    │       ├── bg1.jpg
+    │       └── logo.png
+    ├── router
+    │   └── index.js
+    ├── utils
+    │   └── request.js
+    └── views
+        ├── 404.vue
+        ├── Front.vue
+        ├── Login.vue
+        ├── Manager.vue
+        ├── Register.vue
+        ├── front
+        │   ├── Home.vue
+        │   └── Person.vue
+        └── manager
+            ├── 403.vue
+            ├── Admin.vue
+            ├── AdminPerson.vue
+            ├── Goods.vue
+            ├── Home.vue
+            ├── Notice.vue
+            ├── Password.vue
+            ├── Route.vue
+            ├── Station.vue
+            ├── Supervisor.vue
+            └── User.vue
 
 
 
